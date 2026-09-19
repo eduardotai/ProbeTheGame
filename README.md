@@ -65,7 +65,7 @@ M2 Phases 2–6 (one at a time, each standalone-bootable)
     bossGate.ts       Bulwark guard; default destroy to open B
 
 M3 Full Map 1 loop
-  src/milestones/m3-loop/
+  src/milestones/m3-map1/
     chain.ts          A→B sequential transit
     permadeath.ts     hull 0 ends the run; no revive
     restart.ts        next probe = Play Again, no meta

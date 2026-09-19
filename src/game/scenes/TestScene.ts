@@ -13,7 +13,7 @@ import {
   type PointBTrigger,
 } from '../../milestones/m1-drift';
 import { MAP1_PHASE_ORDER, phaseRegistry } from '../../milestones/m2-phases';
-import { onHullDepleted, requestNextProbe } from '../../milestones/m3-loop';
+import { onHullDepleted, requestNextProbe } from '../../milestones/m3-map1';
 
 /**
  * Runnable empty shell: probe placeholder + keyboard movement.
