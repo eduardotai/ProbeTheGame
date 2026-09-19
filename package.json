@@ -1,0 +1,22 @@
+{
+  "name": "probe-the-game",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "description": "Probe roguelike — Thursday Arena / Grokbot Galaxy. Phaser 3 + TypeScript + Vite scaffold.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "phaser": "^3.90.0"
+  },
+  "devDependencies": {
+    "typescript": "~5.7.3",
+    "vite": "^6.3.5"
+  }
+}
