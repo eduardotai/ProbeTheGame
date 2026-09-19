@@ -8,6 +8,9 @@ export const Palette = {
   pointB: 0x5ee0ff,
   hud: 0x8aa0b4,
   hudWarn: 0xffc14a,
+  cover: 0x1a2433,
+  coverEdge: 0x3a4d66,
+  hull: 0xff6b6b,
 } as const;
 
 export const World = {
@@ -18,6 +21,7 @@ export const World = {
 export const SceneKey = {
   Boot: 'Boot',
   Preload: 'Preload',
+  Drift: 'Drift',
   Test: 'Test',
 } as const;
 

@@ -14,7 +14,7 @@ export class PreloadScene extends Phaser.Scene {
   }
 
   create(): void {
-    this.scene.start(SceneKey.Test);
+    this.scene.start(SceneKey.Drift);
   }
 
   private generateProbeTexture(): void {

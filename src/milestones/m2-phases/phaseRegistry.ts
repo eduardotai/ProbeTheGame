@@ -37,7 +37,7 @@ const driftPhase: PhaseModule = {
   id: driftPhaseStub.id,
   title: driftPhaseStub.title,
   bootStandalone: () => {
-    // TODO(M1): boot Drift as the standalone validation gate.
+    // Drift is the default play scene (M1). App entry boots DriftScene.
   },
 };
 

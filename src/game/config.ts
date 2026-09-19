@@ -1,12 +1,13 @@
 import Phaser from 'phaser';
 import { BootScene } from './scenes/BootScene';
 import { PreloadScene } from './scenes/PreloadScene';
-import { TestScene } from './scenes/TestScene';
+import { DriftScene } from './scenes/DriftScene';
 import { Palette, World } from './constants';
 
 /**
  * Phaser 3 canvas game config.
  * Input lock (PRD §3.1): keyboard-only gameplay. No mouse aiming.
+ * Mouse is enabled only so the Point B / death card can take Play Again clicks.
  */
 export const gameConfig: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -27,8 +28,8 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
   },
   input: {
     keyboard: true,
-    mouse: false,
+    mouse: true,
     touch: false,
   },
-  scene: [BootScene, PreloadScene, TestScene],
+  scene: [BootScene, PreloadScene, DriftScene],
 };

@@ -1,0 +1,21 @@
+/** Drift phase numbers (GDD §4.1). Tuned for a short A→B hunt, not a spreadsheet lock. */
+export const DriftTuning = {
+  thrust: 620,
+  probeMaxSpeed: 240,
+  probeDrag: 0.92,
+  dodgeSpeed: 420,
+  dodgeCost: 18,
+  dodgeIFramesMs: 220,
+  fuelCapacity: 100,
+  fuelRegenPerSec: 7,
+  hullMax: 3,
+  hitIFramesMs: 520,
+  hitKnockback: 260,
+  hunterMaxSpeed: 168,
+  hunterAccel: 390,
+  hunterDrag: 0.90,
+  losRange: 520,
+  hearRadius: 280,
+  noiseDurationMs: 480,
+  contactDamage: 1,
+} as const;
