@@ -1,21 +1,22 @@
 import Phaser from 'phaser';
-import { createTiledCovers, type PixelCover } from '../../game/art';
+import { Palette } from '../../game/constants';
+import { createTiledCovers, paintStarfield, placePointA, type PixelCover } from '../../game/art';
+import type { CoverSpec, DriftLayout } from './procSpine';
 
 export type DriftCover = PixelCover;
 
-const COVER_SPECS: ReadonlyArray<{ x: number; y: number; w: number; h: number }> = [
-  { x: 400, y: 250, w: 44, h: 280 },
-  { x: 740, y: 480, w: 44, h: 280 },
-  { x: 980, y: 220, w: 180, h: 34 },
-];
-
 /**
  * Few hard covers in open Drift space (GDD §4.1).
- * Blocks LOS for hunters; solid for the probe. Hunters do not collide so they
- * can keep a chase without pathfinding (Debris Field owns funnel-gap pathing).
+ * Blocks LOS for hunters; solid for the probe. Hunters do not pathfind
+ * (Debris Field owns funnel-gap pathing).
  */
-export function createDriftCovers(scene: Phaser.Scene): DriftCover[] {
-  return createTiledCovers(scene, COVER_SPECS, 'steel');
+export function createDriftCovers(scene: Phaser.Scene, specs: readonly CoverSpec[]): DriftCover[] {
+  return createTiledCovers(scene, specs, 'steel');
+}
+
+export function paintDriftField(scene: Phaser.Scene, layout: DriftLayout): void {
+  paintStarfield(scene, layout.world.width, layout.world.height, Palette.pointB, 200);
+  placePointA(scene, layout.probe.x, layout.probe.y);
 }
 
 export function coverRects(covers: readonly DriftCover[]): Phaser.Geom.Rectangle[] {

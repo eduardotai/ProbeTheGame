@@ -1,8 +1,8 @@
 import Phaser from 'phaser';
 import { Palette, SceneKey, THEME_LINE, World } from '../constants';
-import { paintStarfield, placePointA } from '../art';
 import { KeyboardController } from '../input/KeyboardController';
 import { Sfx } from '../audio/Sfx';
+import { bindTransitCamera, createRng, formatSeed, resolveTransitSeed, setTransitBounds } from '../proc';
 import {
   applyKeyboardMovement,
   createLosHunter,
@@ -27,7 +27,6 @@ import {
   formatPhaseHudLine,
   isRunOver,
   requestNextProbe,
-  resetViewportCamera,
   resolvePhaseClear,
   resolvePhaseLost,
 } from '../../milestones/m3-map1';
@@ -36,7 +35,7 @@ import {
   createGravityBulwark,
   createGravityCovers,
   distanceToWell,
-  GRAVITY_SPAWN,
+  generateGravityLayout,
   gravityOccluders,
   GravityTuning,
   haltBulwark,
@@ -48,6 +47,7 @@ import {
   updateGravityBulwark,
   type GravityBulwark,
   type GravityCover,
+  type GravityLayout,
 } from '../../milestones/m2-phases/gravity-well';
 
 type RunState = 'playing' | 'recovered' | 'lost';
@@ -60,12 +60,13 @@ type Threat = {
 
 /**
  * Milestone 2.2 — Gravity Well (GDD §4.3 / PRD §6).
- * Constant pull toward a center mass. Shortcut cuts closer (stronger pull,
- * denser threats). Long way around is safer and slower.
+ * Long seeded A→B. Constant pull toward a center mass. Shortcut cuts closer
+ * (stronger pull, denser threats). Long way around is safer and slower.
  */
 export class GravityWellScene extends Phaser.Scene {
   private keys!: KeyboardController;
   private sfx!: Sfx;
+  private layout!: GravityLayout;
   private probe!: Phaser.Physics.Arcade.Image;
   private hunters!: LosHunter[];
   private bulwark!: GravityBulwark;
@@ -90,6 +91,13 @@ export class GravityWellScene extends Phaser.Scene {
   }
 
   create(): void {
+    const seed = resolveTransitSeed();
+    const rng = createRng(seed);
+    this.layout = generateGravityLayout(rng);
+    console.info(
+      `[gravity] seed ${this.layout.seed} (${formatSeed(this.layout.seed)}) world ${this.layout.world.width}x${this.layout.world.height}`,
+    );
+
     this.runState = 'playing';
     this.invulnerableUntil = 0;
     this.spawnProtectedUntil = this.time.now + GravityTuning.spawnProtectMs;
@@ -100,25 +108,23 @@ export class GravityWellScene extends Phaser.Scene {
     this.sfx = new Sfx();
 
     this.cameras.main.setBackgroundColor(Palette.void);
-    resetViewportCamera(this, World.width, World.height);
-    this.physics.world.setBounds(0, 0, World.width, World.height);
-    paintStarfield(this, World.width, World.height, Palette.wellRim);
-    paintGravityField(this);
+    setTransitBounds(this, this.layout.world);
+    paintGravityField(this, this.layout);
 
     const kit = createPhaseEquipment('gravity-well');
     this.fuel = kit.fuel;
     this.hull = kit.hull;
-    this.covers = createGravityCovers(this);
+    this.covers = createGravityCovers(this, this.layout.covers);
 
-    this.probe = createProbe(this, GRAVITY_SPAWN.probe.x, GRAVITY_SPAWN.probe.y);
-    placePointA(this, GRAVITY_SPAWN.probe.x, GRAVITY_SPAWN.probe.y);
+    this.probe = createProbe(this, this.layout.probe.x, this.layout.probe.y);
 
     this.hunters = [
-      ...GRAVITY_SPAWN.shortcutHunters.map((spec) => this.spawnHunter(spec.x, spec.y)),
-      this.spawnHunter(GRAVITY_SPAWN.longHunter.x, GRAVITY_SPAWN.longHunter.y),
+      ...this.layout.shortcutHunters.map((spec) => this.spawnHunter(spec.x, spec.y)),
+      ...this.layout.longHunters.map((spec) => this.spawnHunter(spec.x, spec.y)),
     ];
-    this.bulwark = createGravityBulwark(this, GRAVITY_SPAWN.bulwark.x, GRAVITY_SPAWN.bulwark.y);
-    this.pointB = createPointBTrigger(this, GRAVITY_SPAWN.pointB.x, GRAVITY_SPAWN.pointB.y);
+    this.bulwark = createGravityBulwark(this, this.layout.bulwark.x, this.layout.bulwark.y);
+    this.pointB = createPointBTrigger(this, this.layout.pointB.x, this.layout.pointB.y);
+    bindTransitCamera(this, this.probe, this.layout.world, 0.2);
 
     for (const cover of this.covers) {
       this.physics.add.collider(this.probe, cover.visual);
@@ -167,8 +173,9 @@ export class GravityWellScene extends Phaser.Scene {
       .setScrollFactor(0)
       .setDepth(20);
 
+    const midX = World.width / 2;
     this.banner = this.add
-      .text(World.width / 2, 292, '', {
+      .text(midX, 292, '', {
         fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
         fontSize: '22px',
         color: '#5ee0ff',
@@ -176,11 +183,12 @@ export class GravityWellScene extends Phaser.Scene {
         padding: { x: 14, y: 8 },
       })
       .setOrigin(0.5, 0)
+      .setScrollFactor(0)
       .setVisible(false)
       .setDepth(21);
 
     this.hint = this.add
-      .text(World.width / 2, 340, '', {
+      .text(midX, 340, '', {
         fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
         fontSize: '14px',
         color: '#8aa0b4',
@@ -188,16 +196,18 @@ export class GravityWellScene extends Phaser.Scene {
         padding: { x: 12, y: 6 },
       })
       .setOrigin(0.5, 0)
+      .setScrollFactor(0)
       .setVisible(false)
       .setDepth(21);
 
     this.add
-      .text(World.width / 2, World.height - 28, THEME_LINE, {
+      .text(midX, World.height - 28, THEME_LINE, {
         fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
         fontSize: '12px',
         color: '#5a6b7a',
       })
       .setOrigin(0.5, 1)
+      .setScrollFactor(0)
       .setDepth(20);
 
     this.input.on('pointerdown', () => {
@@ -390,10 +400,15 @@ export class GravityWellScene extends Phaser.Scene {
     const pullLabel =
       band === 'horizon' ? 'HORIZON' : this.pullAccel >= 480 ? 'STRONG' : this.pullAccel >= 260 ? 'FIRM' : 'WEAK';
     const routeLabel = band === 'horizon' ? 'WELL' : band === 'shortcut' ? 'SHORTCUT' : 'LONG WAY';
+    const toB = Math.max(0, Math.round(this.layout.pointB.x - this.probe.x));
     return [
-      formatPhaseHudLine('gravity-well', 'GRAVITY WELL  ·  M2.2', protectedNote),
+      formatPhaseHudLine(
+        'gravity-well',
+        'GRAVITY WELL  ·  M2.2',
+        `  SEED ${formatSeed(this.layout.seed)}${protectedNote}`,
+      ),
       `HULL ${this.hull.current}/${this.hull.max} ${this.hull.toBar()}    FUEL ${Math.floor(this.fuel.current)}/${this.fuel.capacity} ${this.fuel.toBar()}`,
-      `PULL ${pullLabel}  ·  ${routeLabel}    HUNTER ${hunterState}    CLOCK ${formatClock(this.elapsedMs)}`,
+      `PULL ${pullLabel}  ·  ${routeLabel}    HUNTER ${hunterState}    TO B ${toB}    CLOCK ${formatClock(this.elapsedMs)}`,
       'WASD/arrows move   Shift dodge   R next probe   keyboard only',
     ].join('\n');
   }
@@ -409,11 +424,15 @@ export class GravityWellScene extends Phaser.Scene {
         const dist = distanceToWell(probe);
         return {
           runState: this.runState,
+          seed: this.layout.seed,
+          seedHex: formatSeed(this.layout.seed),
+          world: this.layout.world,
           hull: this.hull.current,
           hullMax: this.hull.max,
           fuel: Number(this.fuel.current.toFixed(2)),
           fuelCapacity: this.fuel.capacity,
           elapsedMs: Math.round(this.elapsedMs),
+          toB: Math.max(0, Math.round(this.layout.pointB.x - this.probe.x)),
           pullAccel: Number(this.pullAccel.toFixed(1)),
           distToWell: Number(dist.toFixed(1)),
           routeBand: routeBand(probe),
@@ -433,12 +452,15 @@ export class GravityWellScene extends Phaser.Scene {
             kind: 'bulwark' as const,
           },
           pointBReached: this.pointB.reached,
+          pointB: { x: this.layout.pointB.x, y: this.layout.pointB.y },
+          well: this.layout.well,
         };
       },
       placeProbe: (x: number, y: number) => {
         this.probe.setPosition(x, y);
         const body = this.probe.body as Phaser.Physics.Arcade.Body | null;
         body?.reset(x, y);
+        this.cameras.main.centerOn(x, y);
       },
       hitProbe: (amount = 1) => {
         if (this.runState !== 'playing') {

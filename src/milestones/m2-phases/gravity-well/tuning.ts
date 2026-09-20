@@ -1,8 +1,9 @@
-import { World } from '../../../game/constants';
-
 /** Gravity Well numbers (GDD §4.3). Distinct from Drift/Debris — do not retune them. */
 export const GravityTuning = {
-  well: { x: World.width / 2, y: 540 },
+  /** Long pull-transit. Viewport stays 1280×720; camera follows. */
+  world: { width: 3800, height: 720 },
+  /** Center mass sits mid-transit so pull ramps, then eases toward B. */
+  well: { x: 1900, y: 540 },
   /** Instant hull 0 if the probe crosses this radius. */
   horizonRadius: 80,
   /** Visual mass + hunter keep-out. Probe can still fall through. */
@@ -24,4 +25,9 @@ export const GravityTuning = {
   bulwarkLeash: 236,
   bulwarkHomeRadius: 18,
   spawnProtectMs: 1800,
+} as const;
+
+export const GravitySpine = {
+  launchWidth: 620,
+  approachWidth: 560,
 } as const;

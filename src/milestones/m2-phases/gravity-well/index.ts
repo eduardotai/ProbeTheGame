@@ -1,4 +1,4 @@
-export { GravityTuning } from './tuning';
+export { GravitySpine, GravityTuning } from './tuning';
 export {
   applyGravityPull,
   distanceToWell,
@@ -10,7 +10,13 @@ export {
   type RouteBand,
   type Vec2,
 } from './gravity';
-export { createGravityCovers, GRAVITY_SPAWN, paintGravityField, type GravityCover } from './layout';
+export { createGravityCovers, paintGravityField, type GravityCover } from './layout';
+export {
+  generateGravityLayout,
+  type CoverSpec,
+  type GravityLayout,
+  type HunterSpec,
+} from './procSpine';
 export {
   createGravityBulwark,
   haltBulwark,

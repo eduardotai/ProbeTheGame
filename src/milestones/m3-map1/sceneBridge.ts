@@ -48,8 +48,8 @@ export function formatPhaseHudLine(phaseId: PhaseId, standaloneTitle: string, ex
 
 export function playAgainHint(): string {
   return isChainMode()
-    ? 'Press R or click — launch next probe at Drift'
-    : 'Press R or click — launch next probe';
+    ? 'Press R — launch next probe at Drift'
+    : 'Press R — launch next probe';
 }
 
 export function resolvePhaseClear(

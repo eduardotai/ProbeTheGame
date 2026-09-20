@@ -2,10 +2,15 @@
 
 type DriftDebugSnapshot = {
   runState: 'playing' | 'recovered' | 'lost';
+  seed: number;
+  seedHex: string;
+  world: { width: number; height: number };
   hull: number;
   hullMax: number;
   fuel: number;
   fuelCapacity: number;
+  elapsedMs: number;
+  toB: number;
   probe: { x: number; y: number };
   hunters: Array<{
     x: number;
@@ -14,11 +19,22 @@ type DriftDebugSnapshot = {
     lastSeen: { x: number; y: number } | null;
   }>;
   pointBReached: boolean;
+  pointB: { x: number; y: number };
 };
 
-type DebrisDebugSnapshot = DriftDebugSnapshot & {
+type DebrisDebugSnapshot = {
+  runState: 'playing' | 'recovered' | 'lost';
+  seed: number;
+  seedHex: string;
+  world: { width: number; height: number };
+  hull: number;
+  hullMax: number;
+  fuel: number;
+  fuelCapacity: number;
   elapsedMs: number;
+  toB: number;
   inPocket: boolean;
+  probe: { x: number; y: number };
   hunters: Array<{
     x: number;
     y: number;
@@ -27,15 +43,22 @@ type DebrisDebugSnapshot = DriftDebugSnapshot & {
     visibleToProbe: boolean;
     kind: 'funnel' | 'ambusher';
   }>;
+  pointBReached: boolean;
+  pointB: { x: number; y: number };
+  ambusherCommitX: number;
 };
 
 type GravityDebugSnapshot = {
   runState: 'playing' | 'recovered' | 'lost';
+  seed: number;
+  seedHex: string;
+  world: { width: number; height: number };
   hull: number;
   hullMax: number;
   fuel: number;
   fuelCapacity: number;
   elapsedMs: number;
+  toB: number;
   pullAccel: number;
   distToWell: number;
   routeBand: 'horizon' | 'shortcut' | 'long';
@@ -55,6 +78,8 @@ type GravityDebugSnapshot = {
     kind: 'bulwark';
   };
   pointBReached: boolean;
+  pointB: { x: number; y: number };
+  well: { x: number; y: number };
 };
 
 type BossDebugSnapshot = {

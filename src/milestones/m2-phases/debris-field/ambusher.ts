@@ -14,13 +14,19 @@ export type DebrisAmbusher = {
   repathAt: number;
   stunnedUntil: number;
   lunging: boolean;
+  commitX: number;
 };
 
 /**
- * Debris Ambusher (GDD §7): holds cover, lunges when the probe commits to the exit.
+ * Debris Ambusher (GDD §7): holds cover, lunges when the probe commits to the last corridor.
  * Soft cover is not in M2.1 (hard debris only). Hard cover still occludes + collides.
  */
-export function createDebrisAmbusher(scene: Phaser.Scene, x: number, y: number): DebrisAmbusher {
+export function createDebrisAmbusher(
+  scene: Phaser.Scene,
+  x: number,
+  y: number,
+  commitX: number = DebrisTuning.ambusherCommitX,
+): DebrisAmbusher {
   const sprite = scene.physics.add.image(x, y, TextureKey.Ambusher);
   sprite.setDamping(true);
   sprite.setDrag(DebrisTuning.hunterDrag);
@@ -40,6 +46,7 @@ export function createDebrisAmbusher(scene: Phaser.Scene, x: number, y: number):
     repathAt: 0,
     stunnedUntil: 0,
     lunging: false,
+    commitX,
   };
 }
 
@@ -76,7 +83,7 @@ export function updateDebrisAmbusher(
     ambusher.lastSeen = { x: target.x, y: target.y };
   }
 
-  const committed = target.x >= DebrisTuning.ambusherCommitX && dist <= DebrisTuning.ambusherLungeRange;
+  const committed = target.x >= ambusher.commitX && dist <= DebrisTuning.ambusherLungeRange;
   ambusher.lunging = committed || (ambusher.lunging && dist < DebrisTuning.ambusherLungeRange * 1.35);
 
   if (ambusher.lunging && (los || ambusher.lastSeen)) {

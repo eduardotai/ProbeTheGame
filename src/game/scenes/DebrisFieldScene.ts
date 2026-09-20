@@ -1,8 +1,8 @@
 import Phaser from 'phaser';
 import { Palette, SceneKey, THEME_LINE, World } from '../constants';
-import { paintStarfield, placePointA } from '../art';
 import { KeyboardController } from '../input/KeyboardController';
 import { Sfx } from '../audio/Sfx';
+import { bindTransitCamera, createRng, formatSeed, resolveTransitSeed, setTransitBounds } from '../proc';
 import {
   applyKeyboardMovement,
   coverRects,
@@ -24,7 +24,6 @@ import {
   formatPhaseHudLine,
   isRunOver,
   requestNextProbe,
-  resetViewportCamera,
   resolvePhaseClear,
   resolvePhaseLost,
 } from '../../milestones/m3-map1';
@@ -32,18 +31,20 @@ import {
   createDebrisAmbusher,
   createDebrisCovers,
   createFunnelHunter,
-  DEBRIS_SPAWN,
   DebrisTuning,
+  generateDebrisLayout,
   haltAmbusher,
   haltHunter,
   isInSafePocket,
   NavGrid,
+  paintDebrisField,
   stunAmbusher,
   stunHunter,
   updateDebrisAmbusher,
   updateFunnelHunter,
   type DebrisAmbusher,
   type DebrisCover,
+  type DebrisLayout,
   type FunnelHunter,
 } from '../../milestones/m2-phases/debris-field';
 
@@ -57,11 +58,12 @@ type Threat = {
 
 /**
  * Milestone 2.1 — Debris Field (GDD §4.2 / PRD §6).
- * Cover occludes LOS both ways. Hunters funnel gaps. Safe pockets pause fuel regen.
+ * Long seeded A→B. Cover occludes LOS both ways. Hunters funnel gaps. Safe pockets pause fuel regen.
  */
 export class DebrisFieldScene extends Phaser.Scene {
   private keys!: KeyboardController;
   private sfx!: Sfx;
+  private layout!: DebrisLayout;
   private probe!: Phaser.Physics.Arcade.Image;
   private hunters!: FunnelHunter[];
   private ambusher!: DebrisAmbusher;
@@ -89,6 +91,13 @@ export class DebrisFieldScene extends Phaser.Scene {
   }
 
   create(): void {
+    const seed = resolveTransitSeed();
+    const rng = createRng(seed);
+    this.layout = generateDebrisLayout(rng);
+    console.info(
+      `[debris] seed ${this.layout.seed} (${formatSeed(this.layout.seed)}) world ${this.layout.world.width}x${this.layout.world.height}`,
+    );
+
     this.runState = 'playing';
     this.invulnerableUntil = 0;
     this.spawnProtectedUntil = this.time.now + DebrisTuning.spawnProtectMs;
@@ -99,25 +108,29 @@ export class DebrisFieldScene extends Phaser.Scene {
     this.sfx = new Sfx();
 
     this.cameras.main.setBackgroundColor(Palette.void);
-    resetViewportCamera(this, World.width, World.height);
-    this.physics.world.setBounds(0, 0, World.width, World.height);
-    paintStarfield(this, World.width, World.height, Palette.coverEdge);
+    setTransitBounds(this, this.layout.world);
+    paintDebrisField(this, this.layout);
 
     const kit = createPhaseEquipment('debris-field');
     this.fuel = kit.fuel;
     this.hull = kit.hull;
-    this.covers = createDebrisCovers(this);
+    this.covers = createDebrisCovers(this, this.layout.covers);
     const occluders = coverRects(this.covers);
-    this.grid = new NavGrid(occluders);
+    this.grid = new NavGrid(occluders, this.layout.world);
 
-    this.probe = createProbe(this, DEBRIS_SPAWN.probe.x, DEBRIS_SPAWN.probe.y);
-    placePointA(this, DEBRIS_SPAWN.probe.x, DEBRIS_SPAWN.probe.y);
+    this.probe = createProbe(this, this.layout.probe.x, this.layout.probe.y);
 
-    this.hunters = DEBRIS_SPAWN.funnelHunters.map((spec) =>
+    this.hunters = this.layout.funnelHunters.map((spec) =>
       createFunnelHunter(this, spec.x, spec.y, spec.gap),
     );
-    this.ambusher = createDebrisAmbusher(this, DEBRIS_SPAWN.ambusher.x, DEBRIS_SPAWN.ambusher.y);
-    this.pointB = createPointBTrigger(this, DEBRIS_SPAWN.pointB.x, DEBRIS_SPAWN.pointB.y);
+    this.ambusher = createDebrisAmbusher(
+      this,
+      this.layout.ambusher.x,
+      this.layout.ambusher.y,
+      this.layout.ambusherCommitX,
+    );
+    this.pointB = createPointBTrigger(this, this.layout.pointB.x, this.layout.pointB.y);
+    bindTransitCamera(this, this.probe, this.layout.world, 0.2);
 
     const threats = this.threats();
     for (const cover of this.covers) {
@@ -174,8 +187,9 @@ export class DebrisFieldScene extends Phaser.Scene {
       .setScrollFactor(0)
       .setDepth(20);
 
+    const midX = World.width / 2;
     this.banner = this.add
-      .text(World.width / 2, 292, '', {
+      .text(midX, 292, '', {
         fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
         fontSize: '22px',
         color: '#5ee0ff',
@@ -183,11 +197,12 @@ export class DebrisFieldScene extends Phaser.Scene {
         padding: { x: 14, y: 8 },
       })
       .setOrigin(0.5, 0)
+      .setScrollFactor(0)
       .setVisible(false)
       .setDepth(21);
 
     this.hint = this.add
-      .text(World.width / 2, 340, '', {
+      .text(midX, 340, '', {
         fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
         fontSize: '14px',
         color: '#8aa0b4',
@@ -195,16 +210,18 @@ export class DebrisFieldScene extends Phaser.Scene {
         padding: { x: 12, y: 6 },
       })
       .setOrigin(0.5, 0)
+      .setScrollFactor(0)
       .setVisible(false)
       .setDepth(21);
 
     this.add
-      .text(World.width / 2, World.height - 28, THEME_LINE, {
+      .text(midX, World.height - 28, THEME_LINE, {
         fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
         fontSize: '12px',
         color: '#5a6b7a',
       })
       .setOrigin(0.5, 1)
+      .setScrollFactor(0)
       .setDepth(20);
 
     this.input.on('pointerdown', () => {
@@ -228,7 +245,7 @@ export class DebrisFieldScene extends Phaser.Scene {
 
     this.sfx.resume();
     this.elapsedMs += delta;
-    this.inPocket = isInSafePocket(this.probe.x, this.probe.y);
+    this.inPocket = isInSafePocket(this.probe.x, this.probe.y, this.layout.pockets);
     if (!this.inPocket) {
       this.fuel.update(delta);
     }
@@ -380,10 +397,15 @@ export class DebrisFieldScene extends Phaser.Scene {
     const protectedNote =
       this.runState === 'playing' && this.time.now < this.spawnProtectedUntil ? '  LAUNCH WINDOW' : '';
     const pocketNote = this.inPocket ? '  POCKET — fuel regen paused' : '';
+    const toB = Math.max(0, Math.round(this.layout.pointB.x - this.probe.x));
     return [
-      formatPhaseHudLine('debris-field', 'DEBRIS FIELD  ·  M2.1', `${protectedNote}${pocketNote}`),
+      formatPhaseHudLine(
+        'debris-field',
+        'DEBRIS FIELD  ·  M2.1',
+        `  SEED ${formatSeed(this.layout.seed)}${protectedNote}${pocketNote}`,
+      ),
       `HULL ${this.hull.current}/${this.hull.max} ${this.hull.toBar()}    FUEL ${Math.floor(this.fuel.current)}/${this.fuel.capacity} ${this.fuel.toBar()}`,
-      `HUNTER ${hunterState}    CLOCK ${formatClock(this.elapsedMs)}`,
+      `HUNTER ${hunterState}    TO B ${toB}    CLOCK ${formatClock(this.elapsedMs)}`,
       'WASD/arrows move   Shift dodge   R next probe   keyboard only',
     ].join('\n');
   }
@@ -396,11 +418,15 @@ export class DebrisFieldScene extends Phaser.Scene {
     const debug = {
       snapshot: () => ({
         runState: this.runState,
+        seed: this.layout.seed,
+        seedHex: formatSeed(this.layout.seed),
+        world: this.layout.world,
         hull: this.hull.current,
         hullMax: this.hull.max,
         fuel: Number(this.fuel.current.toFixed(2)),
         fuelCapacity: this.fuel.capacity,
         elapsedMs: Math.round(this.elapsedMs),
+        toB: Math.max(0, Math.round(this.layout.pointB.x - this.probe.x)),
         inPocket: this.inPocket,
         probe: { x: this.probe.x, y: this.probe.y },
         hunters: this.threats().map((threat, index) => ({
@@ -412,11 +438,14 @@ export class DebrisFieldScene extends Phaser.Scene {
           kind: (index === this.hunters.length ? 'ambusher' : 'funnel') as 'ambusher' | 'funnel',
         })),
         pointBReached: this.pointB.reached,
+        pointB: { x: this.layout.pointB.x, y: this.layout.pointB.y },
+        ambusherCommitX: this.layout.ambusherCommitX,
       }),
       placeProbe: (x: number, y: number) => {
         this.probe.setPosition(x, y);
         const body = this.probe.body as Phaser.Physics.Arcade.Body | null;
         body?.reset(x, y);
+        this.cameras.main.centerOn(x, y);
       },
       hitProbe: (amount = 1) => {
         if (this.runState !== 'playing') {

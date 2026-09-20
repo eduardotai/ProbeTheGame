@@ -1,8 +1,8 @@
 import Phaser from 'phaser';
 import { Palette, SceneKey, THEME_LINE, World } from '../constants';
-import { paintStarfield, placePointA } from '../art';
 import { KeyboardController } from '../input/KeyboardController';
 import { Sfx } from '../audio/Sfx';
+import { bindTransitCamera, createRng, formatSeed, resolveTransitSeed, setTransitBounds } from '../proc';
 import {
   applyKeyboardMovement,
   coverRects,
@@ -13,13 +13,16 @@ import {
   DriftTuning,
   emitDodgeNoise,
   FuelTank,
+  generateDriftLayout,
   haltHunter,
   haltProbe,
   Hull,
+  paintDriftField,
   tryDodge,
   updateLosHunter,
   stunHunter,
   type DriftCover,
+  type DriftLayout,
   type LosHunter,
   type NoisePulse,
   type PointBTrigger,
@@ -30,7 +33,6 @@ import {
   formatPhaseHudLine,
   isRunOver,
   requestNextProbe,
-  resetViewportCamera,
   resolvePhaseClear,
   resolvePhaseLost,
 } from '../../milestones/m3-map1';
@@ -39,11 +41,12 @@ type RunState = 'playing' | 'recovered' | 'lost';
 
 /**
  * Milestone 1 — Drift (GDD §4.1 / PRD §5).
- * Keyboard-only probe, fuel dodges, LOS hunters, Point B or hull 0.
+ * Long seeded A→B transit. Keyboard-only probe, fuel dodges, LOS hunters, Point B or hull 0.
  */
 export class DriftScene extends Phaser.Scene {
   private keys!: KeyboardController;
   private sfx!: Sfx;
+  private layout!: DriftLayout;
   private probe!: Phaser.Physics.Arcade.Image;
   private hunters!: LosHunter[];
   private pointB!: PointBTrigger;
@@ -58,6 +61,7 @@ export class DriftScene extends Phaser.Scene {
   private facing = 0;
   private invulnerableUntil = 0;
   private spawnProtectedUntil = 0;
+  private elapsedMs = 0;
   private runState: RunState = 'playing';
 
   constructor() {
@@ -65,31 +69,35 @@ export class DriftScene extends Phaser.Scene {
   }
 
   create(): void {
+    const seed = resolveTransitSeed();
+    const rng = createRng(seed);
+    this.layout = generateDriftLayout(rng);
+    console.info(
+      `[drift] seed ${this.layout.seed} (${formatSeed(this.layout.seed)}) world ${this.layout.world.width}x${this.layout.world.height}`,
+    );
+
     this.runState = 'playing';
     this.invulnerableUntil = 0;
     this.spawnProtectedUntil = this.time.now + DriftTuning.spawnProtectMs;
     this.noise = null;
     this.facing = 0;
+    this.elapsedMs = 0;
     this.sfx = new Sfx();
 
     this.cameras.main.setBackgroundColor(Palette.void);
-    resetViewportCamera(this, World.width, World.height);
-    this.physics.world.setBounds(0, 0, World.width, World.height);
-    paintStarfield(this, World.width, World.height, Palette.pointB);
+    setTransitBounds(this, this.layout.world);
+    paintDriftField(this, this.layout);
 
     const kit = createPhaseEquipment('drift');
     this.fuel = kit.fuel;
     this.hull = kit.hull;
-    this.covers = createDriftCovers(this);
+    this.covers = createDriftCovers(this, this.layout.covers);
 
-    this.probe = createProbe(this, 140, World.height / 2);
-    placePointA(this, 140, World.height / 2);
+    this.probe = createProbe(this, this.layout.probe.x, this.layout.probe.y);
 
-    this.hunters = [
-      createLosHunter(this, 640, 80),
-      createLosHunter(this, 1140, 640),
-    ];
-    this.pointB = createPointBTrigger(this, World.width - 110, World.height / 2);
+    this.hunters = this.layout.hunters.map((spec) => createLosHunter(this, spec.x, spec.y));
+    this.pointB = createPointBTrigger(this, this.layout.pointB.x, this.layout.pointB.y);
+    bindTransitCamera(this, this.probe, this.layout.world, 0.2);
 
     for (const cover of this.covers) {
       this.physics.add.collider(this.probe, cover.visual);
@@ -128,37 +136,47 @@ export class DriftScene extends Phaser.Scene {
         fontSize: '14px',
         color: '#8aa0b4',
         lineSpacing: 6,
+        backgroundColor: '#05070a',
+        padding: { x: 10, y: 8 },
       })
       .setScrollFactor(0)
       .setDepth(20);
 
+    const midX = World.width / 2;
     this.banner = this.add
-      .text(World.width / 2, 300, '', {
+      .text(midX, 292, '', {
         fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
         fontSize: '22px',
         color: '#5ee0ff',
+        backgroundColor: '#05070a',
+        padding: { x: 14, y: 8 },
       })
       .setOrigin(0.5, 0)
+      .setScrollFactor(0)
       .setVisible(false)
       .setDepth(21);
 
     this.hint = this.add
-      .text(World.width / 2, 338, '', {
+      .text(midX, 340, '', {
         fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
         fontSize: '14px',
         color: '#8aa0b4',
+        backgroundColor: '#05070a',
+        padding: { x: 12, y: 6 },
       })
       .setOrigin(0.5, 0)
+      .setScrollFactor(0)
       .setVisible(false)
       .setDepth(21);
 
     this.add
-      .text(World.width / 2, World.height - 28, THEME_LINE, {
+      .text(midX, World.height - 28, THEME_LINE, {
         fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
         fontSize: '12px',
         color: '#5a6b7a',
       })
       .setOrigin(0.5, 1)
+      .setScrollFactor(0)
       .setDepth(20);
 
     this.input.on('pointerdown', () => {
@@ -181,6 +199,7 @@ export class DriftScene extends Phaser.Scene {
     }
 
     this.sfx.resume();
+    this.elapsedMs += delta;
     this.fuel.update(delta);
 
     const move = this.keys.getMoveVector();
@@ -294,10 +313,11 @@ export class DriftScene extends Phaser.Scene {
               : 'PATROL';
     const protectedNote =
       this.runState === 'playing' && this.time.now < this.spawnProtectedUntil ? '  LAUNCH WINDOW' : '';
+    const toB = Math.max(0, Math.round(this.layout.pointB.x - this.probe.x));
     return [
-      formatPhaseHudLine('drift', 'DRIFT  ·  M1', protectedNote),
+      formatPhaseHudLine('drift', 'DRIFT  ·  M1', `  SEED ${formatSeed(this.layout.seed)}${protectedNote}`),
       `HULL ${this.hull.current}/${this.hull.max} ${this.hull.toBar()}    FUEL ${Math.floor(this.fuel.current)}/${this.fuel.capacity} ${this.fuel.toBar()}`,
-      `HUNTER ${hunterState}`,
+      `HUNTER ${hunterState}    TO B ${toB}    CLOCK ${formatClock(this.elapsedMs)}`,
       'WASD/arrows move   Shift dodge   R next probe   keyboard only',
     ].join('\n');
   }
@@ -306,10 +326,15 @@ export class DriftScene extends Phaser.Scene {
     const debug = {
       snapshot: () => ({
         runState: this.runState,
+        seed: this.layout.seed,
+        seedHex: formatSeed(this.layout.seed),
+        world: this.layout.world,
         hull: this.hull.current,
         hullMax: this.hull.max,
         fuel: Number(this.fuel.current.toFixed(2)),
         fuelCapacity: this.fuel.capacity,
+        elapsedMs: Math.round(this.elapsedMs),
+        toB: Math.max(0, Math.round(this.layout.pointB.x - this.probe.x)),
         probe: { x: this.probe.x, y: this.probe.y },
         hunters: this.hunters.map((hunter) => ({
           x: hunter.sprite.x,
@@ -318,11 +343,13 @@ export class DriftScene extends Phaser.Scene {
           lastSeen: hunter.lastSeen,
         })),
         pointBReached: this.pointB.reached,
+        pointB: { x: this.layout.pointB.x, y: this.layout.pointB.y },
       }),
       placeProbe: (x: number, y: number) => {
         this.probe.setPosition(x, y);
         const body = this.probe.body as Phaser.Physics.Arcade.Body | null;
         body?.reset(x, y);
+        this.cameras.main.centerOn(x, y);
       },
       hitProbe: (amount = 1) => {
         if (this.runState !== 'playing') {
@@ -344,5 +371,11 @@ export class DriftScene extends Phaser.Scene {
     (window as Window).__drift = debug;
     exposeMap1Window('drift');
   }
+}
 
+function formatClock(ms: number): string {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
 }

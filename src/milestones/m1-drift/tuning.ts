@@ -1,5 +1,7 @@
-/** Drift phase numbers (GDD §4.1). Tuned for a short A→B hunt, not a spreadsheet lock. */
+/** Drift phase numbers (GDD §4.1). Tuned for a hunted A→B transit, not a spreadsheet lock. */
 export const DriftTuning = {
+  /** Long horizontal transit. Viewport stays 1280×720; camera follows. */
+  world: { width: 3600, height: 720 },
   thrust: 620,
   probeMaxSpeed: 240,
   probeDrag: 0.92,
@@ -21,4 +23,11 @@ export const DriftTuning = {
   contactDamage: 1,
   contactRadius: 46,
   spawnProtectMs: 1400,
+  minHunterX: 680,
+} as const;
+
+export const DriftSpine = {
+  launchWidth: 640,
+  approachWidth: 520,
+  bodySegments: 6,
 } as const;
