@@ -57,8 +57,32 @@ type GravityDebugSnapshot = {
   pointBReached: boolean;
 };
 
+type SwarmDebugSnapshot = {
+  runState: 'playing' | 'recovered' | 'lost';
+  seed: number;
+  seedHex: string;
+  world: { width: number; height: number };
+  hull: number;
+  hullMax: number;
+  fuel: number;
+  fuelCapacity: number;
+  ammo: number;
+  ammoCapacity: number;
+  heat: number;
+  overheated: boolean;
+  elapsedMs: number;
+  toB: number;
+  zone: 'clear' | 'push' | null;
+  swarmlingAlive: number;
+  swarmlingTotal: number;
+  probe: { x: number; y: number };
+  facing: number;
+  pointBReached: boolean;
+};
+
 interface Window {
-  __bootPhase?: 'drift' | 'debris-field' | 'gravity-well';
+  __bootPhase?: 'drift' | 'debris-field' | 'gravity-well' | 'swarm';
+  __probeTransitSeed?: number;
   __drift?: {
     snapshot: () => DriftDebugSnapshot;
   };
@@ -70,6 +94,12 @@ interface Window {
   };
   __gravity?: {
     snapshot: () => GravityDebugSnapshot;
+    placeProbe: (x: number, y: number) => void;
+    hitProbe: (amount?: number) => number;
+    restart: () => void;
+  };
+  __swarm?: {
+    snapshot: () => SwarmDebugSnapshot;
     placeProbe: (x: number, y: number) => void;
     hitProbe: (amount?: number) => number;
     restart: () => void;

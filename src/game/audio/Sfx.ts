@@ -37,6 +37,14 @@ export class Sfx {
     this.blip(90, 70, 0.04, 0.05);
   }
 
+  fire(): void {
+    this.blip(920, 480, 0.035, 0.04);
+  }
+
+  kill(): void {
+    this.blip(480, 160, 0.03, 0.045);
+  }
+
   private ensure(): AudioContext {
     if (!this.ctx) {
       const Ctor = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;

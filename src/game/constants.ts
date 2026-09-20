@@ -18,6 +18,9 @@ export const Palette = {
   shortcut: 0xff8a5a,
   longWay: 0x4a7a8a,
   bulwark: 0xc45a6a,
+  swarmling: 0xffc14a,
+  splitter: 0xff8a3a,
+  bolt: 0x7cffd4,
 } as const;
 
 export const World = {
@@ -31,6 +34,7 @@ export const SceneKey = {
   Drift: 'Drift',
   DebrisField: 'DebrisField',
   GravityWell: 'GravityWell',
+  Swarm: 'Swarm',
   Test: 'Test',
 } as const;
 
@@ -39,6 +43,9 @@ export const TextureKey = {
   Hunter: 'hunter',
   Ambusher: 'ambusher',
   Bulwark: 'bulwark',
+  Swarmling: 'swarmling',
+  Splitter: 'splitter',
+  Bolt: 'bolt',
   PointB: 'point-b',
 } as const;
 

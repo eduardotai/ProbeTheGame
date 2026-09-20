@@ -1,11 +1,12 @@
+import { SceneKey } from '../../game/constants';
 import type { PhaseModule } from './phaseRegistry';
 
-/** GDD §4.4 — Swarmlings; ammo/heat; clear vs push. */
+/** GDD §4.4 — Swarmlings; ammo/heat; clear vs push. Standalone-playable in M2.3. */
 export const swarmPhase: PhaseModule = {
   id: 'swarm',
   title: 'Swarm',
-  sceneKey: null,
+  sceneKey: SceneKey.Swarm,
   bootStandalone: () => {
-    // TODO(M2): dense Swarmlings; ammo/heat limit; clear a pocket vs push through.
+    // PreloadScene starts Swarm when ?phase=swarm.
   },
 };
