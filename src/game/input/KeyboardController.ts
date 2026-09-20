@@ -6,13 +6,12 @@ export type MoveVector = {
 };
 
 /**
- * Keyboard-only controller (PRD §3.1).
- * Exact binds are still TBD — this is a provisional scaffold map, not a lock.
+ * Keyboard-only controller (PRD §3.1). No mouse aiming.
  *
  * - Move: WASD or arrows (facing follows thrust; no pointer aim)
- * - Dodge: Shift (fuel-limited in Drift — GDD §4.1)
+ * - Dodge: Shift (fuel-limited — GDD §4.1)
+ * - Fire: Space (primary). Facing is still thrust; do not bind pointer aim.
  * - Restart stub: R (M3 next-probe placeholder)
- * - Fire: not bound yet
  */
 export class KeyboardController {
   private readonly cursors: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -21,15 +20,25 @@ export class KeyboardController {
   private readonly s: Phaser.Input.Keyboard.Key;
   private readonly d: Phaser.Input.Keyboard.Key;
   private readonly dodge: Phaser.Input.Keyboard.Key;
+  private readonly fire: Phaser.Input.Keyboard.Key;
   private readonly restart: Phaser.Input.Keyboard.Key;
 
   constructor(keyboard: Phaser.Input.Keyboard.KeyboardPlugin) {
+    keyboard.addCapture([
+      Phaser.Input.Keyboard.KeyCodes.W,
+      Phaser.Input.Keyboard.KeyCodes.A,
+      Phaser.Input.Keyboard.KeyCodes.S,
+      Phaser.Input.Keyboard.KeyCodes.D,
+      Phaser.Input.Keyboard.KeyCodes.SPACE,
+      Phaser.Input.Keyboard.KeyCodes.SHIFT,
+    ]);
     this.cursors = keyboard.createCursorKeys();
     this.w = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
     this.a = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
     this.s = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
     this.d = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
     this.dodge = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT);
+    this.fire = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     this.restart = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
   }
 
@@ -60,6 +69,16 @@ export class KeyboardController {
 
   consumeDodgePressed(): boolean {
     return Phaser.Input.Keyboard.JustDown(this.dodge);
+  }
+
+  /** Edge trigger — tap fire. Swarm also reads `isFireDown` for held spray. */
+  consumeFirePressed(): boolean {
+    return Phaser.Input.Keyboard.JustDown(this.fire);
+  }
+
+  /** Level trigger — hold Space to spray until heat/ammo gates it. */
+  isFireDown(): boolean {
+    return this.fire.isDown;
   }
 
   consumeRestartPressed(): boolean {

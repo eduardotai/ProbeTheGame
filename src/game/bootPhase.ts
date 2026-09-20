@@ -4,6 +4,7 @@ import { getPhase, type PhaseId } from '../milestones/m2-phases';
 /**
  * Standalone phase boot (PRD §6).
  * Default is Drift. Debris: `?phase=debris`. Gravity Well: `?phase=gravity`.
+ * Swarm: `?phase=swarm` (optional `&seed=12345` locks the A→B spine).
  */
 const PHASE_ALIASES: Record<string, PhaseId> = {
   drift: 'drift',

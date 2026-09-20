@@ -1,11 +1,28 @@
 # Progress media
 
-Playtest stills and one key clip from M2.2 Gravity Well (and confirmation that Drift / Debris Field still boot).
+Playtest stills and clips. Swarm (M2.3) seed `4242` (`?phase=swarm&seed=4242`).
+
+## M2.3 Swarm
 
 | File | What it shows |
 |------|----------------|
-| `gravity_well_layout.png` | Gravity Well at launch (well, shortcut trench, Point A / B) |
-| `gravity_well_long_way_label.png` | Same field with the LONG WAY label readable on the north rim |
-| `gravity_well_recover_b_and_horizon_death.mp4` | Long way recovers at B (hull 3/3); shortcut D-only falls into the well (hull 0); Drift and Debris still boot via `?phase=` |
-| `drift_still_boots.png` | `?phase=drift` still boots Drift |
-| `debris_still_boots.png` | `?phase=debris` still boots Debris Field |
+| `swarm-spawn.png` | Launch runway at A — quiet spawn, SEED, LAUNCH WINDOW, CLEAR/PUSH ahead |
+| `swarm-clear-pocket.png` | Probe inside a **CLEAR** pocket (HUD: CLEAR POCKET) |
+| `swarm-push.png` | Mid-transit **PUSH** lane packed with Swarmlings |
+| `swarm-heat-ammo.png` | Space fire gated — AMMO 23/28, HEAT **LOCK** |
+| `swarm-recovered.png` | Point B — PROBE RECOVERED (TO B 0) |
+| `swarm-lost.png` | HULL 0 — PROBE LOST |
+| `swarm-pressure.mp4` | A→B thrust into Swarm pressure: camera follow, Space bursts, Shift dodge, then hull 0 |
+
+## Earlier phases (already on main)
+
+| File | What it shows |
+|------|----------------|
+| `gravity_well_layout.png` | Gravity Well at launch |
+| `gravity_well_long_way_label.png` | LONG WAY label on the north rim |
+| `gravity_well_recover_b_and_horizon_death.mp4` | Gravity recover at B / horizon death; Drift and Debris still boot |
+| `debris-spawn.png` / `debris-pocket.png` / `debris-lost.png` / `debris-recovered.png` | Debris Field stills |
+| `drift-spawn.png` / `drift_point_b_recovered_centered.png` / `drift_hull_zero_lost_centered.png` | Drift stills |
+| `drift_m1_win_death_restart_with_centered_banners.mp4` | Drift win/death/restart |
+| `drift_still_boots.png` | `?phase=drift` |
+| `debris_still_boots.png` | `?phase=debris` |

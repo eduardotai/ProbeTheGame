@@ -13,6 +13,9 @@ export class PreloadScene extends Phaser.Scene {
     this.generateHunterTexture();
     this.generateAmbusherTexture();
     this.generateBulwarkTexture();
+    this.generateSwarmlingTexture();
+    this.generateSplitterTexture();
+    this.generateBoltTexture();
     this.generatePointBTexture();
   }
 
@@ -58,6 +61,36 @@ export class PreloadScene extends Phaser.Scene {
     g.fillStyle(Palette.coverEdge, 1);
     g.fillRect(14, 18, 12, 8);
     g.generateTexture(TextureKey.Bulwark, 40, 44);
+    g.destroy();
+  }
+
+  private generateSwarmlingTexture(): void {
+    const g = this.make.graphics({}, false);
+    g.fillStyle(Palette.swarmling, 1);
+    g.fillTriangle(12, 2, 2, 22, 22, 22);
+    g.fillTriangle(12, 22, 6, 16, 18, 16);
+    g.generateTexture(TextureKey.Swarmling, 24, 24);
+    g.destroy();
+  }
+
+  private generateSplitterTexture(): void {
+    const g = this.make.graphics({}, false);
+    g.fillStyle(Palette.splitter, 1);
+    g.fillTriangle(16, 2, 2, 16, 30, 16);
+    g.fillTriangle(16, 30, 2, 16, 30, 16);
+    g.fillStyle(Palette.swarmling, 1);
+    g.fillCircle(16, 16, 3);
+    g.generateTexture(TextureKey.Splitter, 32, 32);
+    g.destroy();
+  }
+
+  private generateBoltTexture(): void {
+    const g = this.make.graphics({}, false);
+    g.fillStyle(Palette.bolt, 1);
+    g.fillRect(3, 0, 8, 18);
+    g.fillStyle(0xffffff, 1);
+    g.fillRect(5, 0, 4, 7);
+    g.generateTexture(TextureKey.Bolt, 14, 18);
     g.destroy();
   }
 

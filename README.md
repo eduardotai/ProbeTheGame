@@ -4,7 +4,7 @@ Sci-fi roguelike set in **Thursday Arena** (Grokbot Galaxy). You are not a hero 
 
 > You are not a hero. You are a probe. You do not return.
 
-**Current playable gate: Milestone 2.2 — Gravity Well** (M1 Drift still boots by default). Phaser 3 + TypeScript + Vite. Greybox silhouettes. Keyboard-only.
+**Current playable gate: Milestone 2.3 — Swarm** (M1 Drift still boots by default). Phaser 3 + TypeScript + Vite. Greybox silhouettes. Keyboard-only.
 
 Design source of truth (do not contradict):
 
@@ -36,22 +36,26 @@ npm run preview  # serve the production bundle
 | Drift (default) | `/` or `?phase=drift` |
 | Debris Field | `?phase=debris` or `?phase=debris-field` |
 | Gravity Well | `?phase=gravity` or `?phase=gravity-well` |
+| Swarm | `?phase=swarm` (optional `&seed=12345` locks the spine) |
 
 Other Map 1 ids resolve in the phase registry but are still stubs (they fall back to Drift).
 
 ## How to play
 
-Keyboard only. No mouse aiming. Fire is not bound yet. End-card **click** is OK for next probe.
+Keyboard only. No mouse aiming. End-card **click** is OK for next probe.
 
 | Action | Keys |
 |--------|------|
 | Move (facing follows thrust) | `WASD` or arrow keys |
 | Dodge (fuel + noise, brief i-frames) | `Shift` |
+| Fire (primary; facing from thrust, not pointer) | `Space` |
 | Next probe (after win or death, or mid-run) | `R` (or click the end card) |
+
+`KeyboardController` exposes `consumeFirePressed()` (tap) and `isFireDown()` (hold). Swarm uses both so a tap still shoots and a hold sprays until heat/ammo gates it.
 
 ### M1 Drift
 
-Launch at **A** (left). Cross open space to **B** (right). Hunters chase when they have **line of sight**. A few hard covers break vision. Dodging costs **fuel** and makes noise. Contact chips **hull**. Hull 0 ends the probe. Reaching B recovers it.
+Launch at **A** (left). Cross open space to **B** (right). Hunters chase when they have **line of sight**. A few hard covers break vision. Dodging costs **fuel** and makes noise. Contact chips **hull**. Hull 0 ends the probe. Reaching B recovers it. Fire is bound globally but this phase has nothing to shoot.
 
 ### M2.1 Debris Field
 
@@ -60,6 +64,14 @@ Cover slabs block vision **both ways** (hunters behind debris are hidden; they c
 ### M2.2 Gravity Well
 
 A center mass pulls **always**. The **shortcut** is the A→B line that cuts north of the well: shorter, stronger pull, denser threats (two hunters + a Gravity Bulwark that anchors near the well). The **long way** loops the north rim: weaker pull, one hunter, slower. Fall inside the horizon and hull hits 0. Reach B or die; **R** relaunches this phase (standalone).
+
+### M2.3 Swarm
+
+A **long horizontal transit** (world ~4600px, camera follows the probe). Seeded procedural spine: same `seed` → same covers, pockets, and Swarmling homes. HUD and the console show the seed. Point B is far east — this is still a finite hunted A→B, not an endless arena.
+
+Dozens of small **Swarmlings** pressure the whole run (denser near B). They **flash and lunge** after a short tell — dodge through the commit, do not auto-aim popcorn. **Heat** and **ammo** gate spray (short bursts only). Named variant: a **Splitter** dies into two smaller Swarmlings (no further split).
+
+Choice: **CLEAR** a pocket (spend ammo/heat, quieter lane) vs **PUSH** through contact damage toward B. Reach B or die; **R** relaunches Swarm (same seed for this page load unless you passed `?seed=`).
 
 ## Milestone map
 
@@ -84,9 +96,11 @@ M2 Phases 2–6 (one at a time, each standalone-bootable)
     debrisField.ts    registry entry (sceneKey DebrisField)
     gravity-well/     M2.2 playable — center pull / shortcut vs long way
     gravityWell.ts    registry entry (sceneKey GravityWell)
-    swarm.ts          stub — Swarmlings / ammo-heat
+    swarm/            M2.3 playable — long A→B spine / Swarmlings / heat+ammo
+    swarm.ts          registry entry (sceneKey Swarm)
     anomaly.ts        stub — one invert-rules phase per run
     bossGate.ts       stub — Bulwark guard; default destroy to open B
+  src/game/proc/      shared seeded RNG + transit camera (Swarm uses it now)
 
 M3 Full Map 1 loop
   src/milestones/m3-map1/
