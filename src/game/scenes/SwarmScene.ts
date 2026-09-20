@@ -62,6 +62,7 @@ export class SwarmScene extends Phaser.Scene {
   private facing = 0;
   private invulnerableUntil = 0;
   private spawnProtectedUntil = 0;
+  private dodgeUntil = 0;
   private elapsedMs = 0;
   private runState: RunState = 'playing';
 
@@ -80,6 +81,7 @@ export class SwarmScene extends Phaser.Scene {
     this.spawnProtectedUntil = this.time.now + SwarmTuning.spawnProtectMs;
     this.facing = 0;
     this.elapsedMs = 0;
+    this.dodgeUntil = 0;
     this.swarmlings = [];
     this.sfx = new Sfx();
     this.weapon = new SwarmWeapon();
@@ -93,6 +95,7 @@ export class SwarmScene extends Phaser.Scene {
 
     this.probe = createProbe(this, this.layout.probe.x, this.layout.probe.y);
     this.probe.setMaxVelocity(SwarmTuning.probeMaxSpeed);
+    this.probe.setDrag(SwarmTuning.probeDrag);
 
     this.swarmGroup = this.physics.add.group();
     this.boltGroup = this.physics.add.group();
@@ -102,7 +105,7 @@ export class SwarmScene extends Phaser.Scene {
     }
 
     this.pointB = createPointBTrigger(this, this.layout.pointB.x, this.layout.pointB.y);
-    bindTransitCamera(this, this.probe, this.layout.world);
+    bindTransitCamera(this, this.probe, this.layout.world, 0.2);
 
     for (const cover of this.covers) {
       this.physics.add.collider(this.probe, cover.visual);
@@ -219,10 +222,18 @@ export class SwarmScene extends Phaser.Scene {
       const dodged = tryDodge(this.probe, this.fuel, this.facing);
       if (dodged) {
         this.invulnerableUntil = Math.max(this.invulnerableUntil, time + DriftTuning.dodgeIFramesMs);
+        this.probe.setMaxVelocity(SwarmTuning.dodgeBurstSpeed);
+        this.dodgeUntil = time + SwarmTuning.dodgeBurstMs;
         this.sfx.dodge();
       } else {
         this.sfx.dry();
       }
+    }
+    if (time >= this.dodgeUntil) {
+      this.probe.setMaxVelocity(SwarmTuning.probeMaxSpeed);
+    }
+    if (time >= this.invulnerableUntil) {
+      this.probe.clearTint();
     }
 
     const wantsFire = this.keys.consumeFirePressed() || this.keys.isFireDown();
@@ -292,7 +303,10 @@ export class SwarmScene extends Phaser.Scene {
     this.hull.applyHit(SwarmTuning.contactDamage);
     stunSwarmling(ling, now + SwarmTuning.stunMs);
     this.sfx.hit();
-    this.cameras.main.shake(90, 0.005);
+    this.cameras.main.shake(110, 0.007);
+    this.probe.setTint(0xff8a8a);
+    this.probe.setMaxVelocity(SwarmTuning.dodgeBurstSpeed);
+    this.dodgeUntil = Math.max(this.dodgeUntil, now + 160);
 
     const body = this.probe.body as Phaser.Physics.Arcade.Body | null;
     if (body) {
@@ -323,7 +337,8 @@ export class SwarmScene extends Phaser.Scene {
     killSwarmling(ling);
     this.sfx.kill();
     if (wasSplitter) {
-      for (const mini of spawnSplitMinis(this, at, splitFacing)) {
+      const toward = { x: this.probe.x, y: this.probe.y };
+      for (const mini of spawnSplitMinis(this, at, splitFacing, this.time.now, toward)) {
         this.adoptSwarmling(mini);
       }
     }
@@ -377,7 +392,7 @@ export class SwarmScene extends Phaser.Scene {
     const zone = zoneAt(this.layout.zones, this.probe.x, this.probe.y);
     const heat = this.weapon.heat;
     const mag = this.weapon.mag;
-    const heatLabel = heat.locked ? 'LOCK' : heat.current > 72 ? 'WARM' : 'OK';
+    const heatLabel = heat.locked ? 'LOCK' : heat.current > 48 ? 'WARM' : 'OK';
     const ammoLabel = mag.current <= 0 ? 'EMPTY' : `${mag.current}/${mag.capacity}`;
     const protectedNote =
       this.runState === 'playing' && this.time.now < this.spawnProtectedUntil ? '  LAUNCH WINDOW' : '';

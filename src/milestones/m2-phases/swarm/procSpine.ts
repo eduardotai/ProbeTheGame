@@ -175,7 +175,7 @@ function pickBodyKinds(rng: Rng, n: number): SegmentKind[] {
 
 function densityAt(x: number, worldWidth: number): number {
   const t = clamp(x / Math.max(1, worldWidth), 0, 1);
-  return 0.72 + t * 0.7;
+  return 0.82 + t * 0.95;
 }
 
 function addSpawnOccluder(covers: CoverSpec[]): void {
@@ -238,10 +238,10 @@ function addPocket(
       x: left + 28 + rng.float(0, w - 56),
       y: top + 28 + rng.float(0, h - 56),
       kind: i === 0 ? 'splitter' : 'swarmling',
-      homeRadius: 36,
+      homeRadius: 28,
     });
   }
-  const roamers = Math.max(2, Math.round(2 * density));
+  const roamers = Math.max(2, Math.round(3 * density));
   for (let i = 0; i < roamers; i += 1) {
     swarmlings.push({
       x: rng.float(segment.x0 + 40, segment.x1 - 40),
@@ -266,13 +266,13 @@ function addPush(
     h: segment.gapHalf * 2 + 20,
     kind: 'push',
   });
-  const count = Math.round(8 * density);
+  const count = Math.round(10 * density);
   for (let i = 0; i < count; i += 1) {
     swarmlings.push({
       x: rng.float(segment.x0 + 36, segment.x1 - 36),
-      y: segment.laneY + rng.float(-segment.gapHalf - 30, segment.gapHalf + 30),
-      kind: i === 0 && density > 1.1 ? 'splitter' : 'swarmling',
-      homeRadius: 54,
+      y: segment.laneY + rng.float(-segment.gapHalf - 24, segment.gapHalf + 24),
+      kind: i === 0 && density > 1.15 ? 'splitter' : 'swarmling',
+      homeRadius: 40,
     });
   }
 }
@@ -291,13 +291,13 @@ function addMix(
     h: 360,
     kind: 'push',
   });
-  const count = Math.round(5 * density);
+  const count = Math.round(7 * density);
   for (let i = 0; i < count; i += 1) {
     swarmlings.push({
       x: rng.float(segment.x0 + 40, segment.x1 - 40),
       y: rng.float(160, 560),
       kind: 'swarmling',
-      homeRadius: 64,
+      homeRadius: 48,
     });
   }
 }
@@ -316,13 +316,13 @@ function addApproach(
     h: 440,
     kind: 'push',
   });
-  const count = Math.round(12 * density);
+  const count = Math.round(15 * density);
   for (let i = 0; i < count; i += 1) {
     swarmlings.push({
       x: rng.float(segment.x0 + 30, segment.x1 - 150),
       y: rng.float(140, 580),
       kind: i === 0 ? 'splitter' : 'swarmling',
-      homeRadius: 50,
+      homeRadius: 42,
     });
   }
 }

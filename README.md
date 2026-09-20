@@ -67,9 +67,9 @@ A center mass pulls **always**. The **shortcut** is the A→B line that cuts nor
 
 ### M2.3 Swarm
 
-A **long horizontal transit** (world ~4400px, camera follows the probe). Seeded procedural spine: same `seed` → same covers, pockets, and Swarmling homes. HUD and the console show the seed. Point B is far east — this is still a finite hunted A→B, not an endless arena.
+A **long horizontal transit** (world ~4600px, camera follows the probe). Seeded procedural spine: same `seed` → same covers, pockets, and Swarmling homes. HUD and the console show the seed. Point B is far east — this is still a finite hunted A→B, not an endless arena.
 
-Dozens of small **Swarmlings** pressure the whole run (denser near B). **Heat** and **ammo** gate spray — you cannot hold Space forever, and you cannot clear every body. Named variant: a **Splitter** dies into two smaller Swarmlings (no further split).
+Dozens of small **Swarmlings** pressure the whole run (denser near B). They **flash and lunge** after a short tell — dodge through the commit, do not auto-aim popcorn. **Heat** and **ammo** gate spray (short bursts only). Named variant: a **Splitter** dies into two smaller Swarmlings (no further split).
 
 Choice: **CLEAR** a pocket (spend ammo/heat, quieter lane) vs **PUSH** through contact damage toward B. Reach B or die; **R** relaunches Swarm (same seed for this page load unless you passed `?seed=`).
 

@@ -6,6 +6,8 @@ export type Vec2 = { x: number; y: number };
 
 export type SwarmlingRole = 'swarmling' | 'splitter' | 'mini';
 
+export type AggroPhase = 'idle' | 'tell' | 'chase';
+
 export type Swarmling = {
   sprite: Phaser.Physics.Arcade.Image;
   kind: SwarmlingRole;
@@ -14,6 +16,10 @@ export type Swarmling = {
   hp: number;
   stunnedUntil: number;
   alive: boolean;
+  phase: AggroPhase;
+  tellUntil: number;
+  lungeUntil: number;
+  baseScale: number;
 };
 
 export function createSwarmling(
@@ -29,13 +35,14 @@ export function createSwarmling(
   sprite.setDrag(SwarmTuning.swarmlingDrag);
   sprite.setCollideWorldBounds(true);
   sprite.setDepth(8);
-  sprite.setBounce(0.18);
+  sprite.setBounce(0.14);
   const body = sprite.body as Phaser.Physics.Arcade.Body | null;
+  const baseScale = kind === 'mini' ? 0.62 : 1;
   if (kind === 'splitter') {
     sprite.setMaxVelocity(SwarmTuning.splitterMaxSpeed);
     body?.setSize(18, 20, true);
   } else if (kind === 'mini') {
-    sprite.setScale(0.62);
+    sprite.setScale(baseScale);
     sprite.setMaxVelocity(SwarmTuning.miniMaxSpeed);
     sprite.setTint(0xffe08a);
     body?.setSize(12, 12, true);
@@ -51,6 +58,10 @@ export function createSwarmling(
     hp: 1,
     stunnedUntil: 0,
     alive: true,
+    phase: 'idle',
+    tellUntil: 0,
+    lungeUntil: 0,
+    baseScale,
   };
 }
 
@@ -80,27 +91,55 @@ export function updateSwarmling(ling: Swarmling, target: Vec2, now: number, aggr
   }
 
   const dist = Phaser.Math.Distance.Between(sprite.x, sprite.y, target.x, target.y);
-  if (aggroEnabled && dist <= SwarmTuning.aggroRadius) {
-    const accel =
-      ling.kind === 'splitter'
+  const inRange = aggroEnabled && dist <= SwarmTuning.aggroRadius;
+  const dropped = dist > SwarmTuning.aggroDropRadius || !aggroEnabled;
+
+  if (ling.phase === 'idle') {
+    if (inRange) {
+      beginTell(ling, now, target);
+      return;
+    }
+    wander(ling, body, now);
+    return;
+  }
+
+  if (dropped) {
+    restIdle(ling);
+    wander(ling, body, now);
+    return;
+  }
+
+  faceSprite(sprite, target);
+
+  if (ling.phase === 'tell') {
+    body.setAcceleration(0, 0);
+    body.setVelocity(0, 0);
+    const pulse = 0.62 + 0.38 * Math.abs(Math.sin(now * 0.022));
+    sprite.setAlpha(pulse);
+    sprite.setTint(0xfff4d0);
+    sprite.setScale(ling.baseScale * (1.08 + 0.1 * pulse));
+    if (now >= ling.tellUntil) {
+      commitLunge(ling, body, target, now);
+    }
+    return;
+  }
+
+  const accel =
+    now < ling.lungeUntil
+      ? SwarmTuning.lungeAccel
+      : ling.kind === 'splitter'
         ? SwarmTuning.splitterAccel
         : ling.kind === 'mini'
           ? SwarmTuning.miniAccel
           : SwarmTuning.swarmlingAccel;
-    accelerateToward(body, target, accel);
-    sprite.setRotation(Phaser.Math.Angle.Between(sprite.x, sprite.y, target.x, target.y) + Math.PI / 2);
-    sprite.setAlpha(1);
-    return;
-  }
-
-  const homeDist = Phaser.Math.Distance.Between(sprite.x, sprite.y, ling.home.x, ling.home.y);
-  if (homeDist > ling.homeRadius) {
-    accelerateToward(body, ling.home, SwarmTuning.wanderAccel);
+  accelerateToward(body, target, accel);
+  sprite.setAlpha(1);
+  sprite.setScale(ling.baseScale);
+  if (ling.kind !== 'mini') {
+    sprite.clearTint();
   } else {
-    const wander = now * 0.0018 + ling.home.x * 0.01;
-    body.setAcceleration(Math.cos(wander) * SwarmTuning.wanderAccel, Math.sin(wander * 1.3) * SwarmTuning.wanderAccel);
+    sprite.setTint(0xffe08a);
   }
-  sprite.setAlpha(0.78);
 }
 
 export function stunSwarmling(ling: Swarmling, until: number): void {
@@ -129,13 +168,85 @@ export function killSwarmling(ling: Swarmling): void {
   ling.sprite.setVisible(false);
 }
 
-export function spawnSplitMinis(scene: Phaser.Scene, at: Vec2, facing: number): [Swarmling, Swarmling] {
+export function spawnSplitMinis(
+  scene: Phaser.Scene,
+  at: Vec2,
+  facing: number,
+  now: number,
+  toward: Vec2,
+): [Swarmling, Swarmling] {
   const ox = Math.cos(facing + Math.PI / 2) * SwarmTuning.splitOffset;
   const oy = Math.sin(facing + Math.PI / 2) * SwarmTuning.splitOffset;
-  return [
-    createSwarmling(scene, at.x + ox, at.y + oy, 'mini', 28),
-    createSwarmling(scene, at.x - ox, at.y - oy, 'mini', 28),
-  ];
+  const a = createSwarmling(scene, at.x + ox, at.y + oy, 'mini', 28);
+  const b = createSwarmling(scene, at.x - ox, at.y - oy, 'mini', 28);
+  beginTell(a, now, toward);
+  beginTell(b, now, toward);
+  return [a, b];
+}
+
+function beginTell(ling: Swarmling, now: number, target: Vec2): void {
+  ling.phase = 'tell';
+  ling.tellUntil = now + tellMsFor(ling.kind);
+  haltSwarmling(ling);
+  faceSprite(ling.sprite, target);
+  ling.sprite.setTint(0xfff4d0);
+}
+
+function commitLunge(ling: Swarmling, body: Phaser.Physics.Arcade.Body, target: Vec2, now: number): void {
+  ling.phase = 'chase';
+  ling.lungeUntil = now + SwarmTuning.lungeMs;
+  ling.sprite.setScale(ling.baseScale);
+  if (ling.kind !== 'mini') {
+    ling.sprite.clearTint();
+  }
+  ling.sprite.setAlpha(1);
+  const dx = target.x - body.center.x;
+  const dy = target.y - body.center.y;
+  const len = Math.hypot(dx, dy) || 1;
+  const cap = Math.max(body.maxVelocity.x, SwarmTuning.lungeSpeed);
+  body.setMaxVelocity(cap, cap);
+  body.setVelocity((dx / len) * SwarmTuning.lungeSpeed, (dy / len) * SwarmTuning.lungeSpeed);
+}
+
+function restIdle(ling: Swarmling): void {
+  ling.phase = 'idle';
+  ling.sprite.setScale(ling.baseScale);
+  ling.sprite.setAlpha(0.78);
+  if (ling.kind === 'mini') {
+    ling.sprite.setTint(0xffe08a);
+  } else {
+    ling.sprite.clearTint();
+  }
+}
+
+function wander(ling: Swarmling, body: Phaser.Physics.Arcade.Body, now: number): void {
+  const sprite = ling.sprite;
+  const homeDist = Phaser.Math.Distance.Between(sprite.x, sprite.y, ling.home.x, ling.home.y);
+  if (homeDist > ling.homeRadius) {
+    accelerateToward(body, ling.home, SwarmTuning.wanderAccel);
+  } else {
+    const wanderPhase = now * 0.0018 + ling.home.x * 0.01;
+    body.setAcceleration(
+      Math.cos(wanderPhase) * SwarmTuning.wanderAccel,
+      Math.sin(wanderPhase * 1.3) * SwarmTuning.wanderAccel,
+    );
+  }
+  sprite.setAlpha(0.78);
+  sprite.setScale(ling.baseScale);
+}
+
+function tellMsFor(kind: SwarmlingRole): number {
+  if (kind === 'splitter') {
+    return SwarmTuning.splitterTellMs;
+  }
+  if (kind === 'mini') {
+    return SwarmTuning.miniTellMs;
+  }
+  return SwarmTuning.tellMs;
+}
+
+function faceSprite(sprite: Phaser.Physics.Arcade.Image, target: Vec2): void {
+  sprite.setRotation(Phaser.Math.Angle.Between(sprite.x, sprite.y, target.x, target.y) + Math.PI / 2);
 }
 
 function accelerateToward(body: Phaser.Physics.Arcade.Body, target: Vec2, accel: number): void {

@@ -19,11 +19,12 @@ export function bindTransitCamera(
   scene: Phaser.Scene,
   target: Phaser.GameObjects.GameObject,
   world: TransitWorld,
+  lerp = 0.14,
 ): void {
   setTransitBounds(scene, world);
   const cam = scene.cameras.main;
-  cam.startFollow(target, true, 0.14, 0.14);
-  cam.setDeadzone(88, 36);
+  cam.startFollow(target, true, lerp, lerp);
+  cam.setDeadzone(72, 32);
 }
 
 export function viewportCenter(scene: Phaser.Scene): { x: number; y: number } {
