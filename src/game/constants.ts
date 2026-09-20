@@ -25,6 +25,8 @@ export const Palette = {
   echo: 0xc89aff,
   echoPrime: 0xe0a0ff,
   invert: 0xff6ad5,
+  gate: 0x8a3a4a,
+  ward: 0xff8a5a,
 } as const;
 
 export const World = {
@@ -40,6 +42,7 @@ export const SceneKey = {
   GravityWell: 'GravityWell',
   Swarm: 'Swarm',
   Anomaly: 'Anomaly',
+  BossGate: 'BossGate',
   Test: 'Test',
 } as const;
 
@@ -53,6 +56,7 @@ export const TextureKey = {
   Bolt: 'bolt',
   Echo: 'echo',
   EchoPrime: 'echo-prime',
+  WardBolt: 'ward-bolt',
   PointB: 'point-b',
 } as const;
 

@@ -6,6 +6,7 @@ import { getPhase, type PhaseId } from '../milestones/m2-phases';
  * Default is Drift. Debris: `?phase=debris`. Gravity Well: `?phase=gravity`.
  * Swarm: `?phase=swarm` (optional `&seed=12345` locks the A→B spine).
  * Anomaly: `?phase=anomaly` (optional `&seed=` locks the spine).
+ * Boss Gate: `?phase=boss` or `?phase=boss-gate` (optional `&seed=`).
  */
 const PHASE_ALIASES: Record<string, PhaseId> = {
   drift: 'drift',

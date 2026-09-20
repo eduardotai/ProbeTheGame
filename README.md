@@ -4,7 +4,7 @@ Sci-fi roguelike set in **Thursday Arena** (Grokbot Galaxy). You are not a hero 
 
 > You are not a hero. You are a probe. You do not return.
 
-**Current playable gate: Milestone 2.4 — Anomaly** (M1 Drift still boots by default). Phaser 3 + TypeScript + Vite. Greybox silhouettes. Keyboard-only.
+**Current playable gate: Milestone 2.5 — Boss Gate** (M1 Drift still boots by default). Phaser 3 + TypeScript + Vite. Greybox silhouettes. Keyboard-only.
 
 Design source of truth (do not contradict):
 
@@ -38,8 +38,7 @@ npm run preview  # serve the production bundle
 | Gravity Well | `?phase=gravity` or `?phase=gravity-well` |
 | Swarm | `?phase=swarm` (optional `&seed=12345` locks the spine) |
 | Anomaly | `?phase=anomaly` (optional `&seed=12345` locks the spine) |
-
-Boss Gate still stubs (falls back to Drift).
+| Boss Gate | `?phase=boss` or `?phase=boss-gate` (optional `&seed=12345` locks the approach) |
 
 ## How to play
 
@@ -86,6 +85,22 @@ Long seeded A→B (~4400px, camera follows). Same `seed` → same covers and Ech
 
 No music bed (MVP).
 
+### M2.5 Boss Gate
+
+Standalone final Map 1 phase. Finite A→B approach (~3200px, camera follows) into a **sealed gate**. Shorter than Swarm/Anomaly, not a 10-second dash.
+
+Heavy **Gate Bulwark** (named variant) holds Point B. Default win: **destroy the guard to open B** (GDD §4.6 / Q6 — no Sensors/Utility bypass). You still have to fly to B after the gate opens.
+
+Skill test of prior verbs: WASD, fuel **Shift** dodge, **Space** fire (heat + ammo still gate spray). The Bulwark **telegraphs** then commits:
+
+- **CHARGE TELL** — red lane + frontal plate (bolts into the face are absorbed; flank or wait for recover)
+- **SWEEP TELL** — orange cone, then a fan of slow ward bolts to weave
+- **SLAM TELL** (enraged, half HP) — ring shockwave; dodge through the band
+
+Punishable mistakes: eating a charge, standing in the slam ring, dumping ammo into the plate. Reach B or die; **R** relaunches Boss Gate.
+
+No music bed (MVP).
+
 ## Milestone map
 
 Gated by the PRD. **Do not start the next milestone until the previous gate is playable.**
@@ -113,8 +128,9 @@ M2 Phases 2–6 (one at a time, each standalone-bootable)
     swarm.ts          registry entry (sceneKey Swarm)
     anomaly/          M2.4 playable — mirrored controls / Echo dim-tell / long spine
     anomaly.ts        registry entry (sceneKey Anomaly)
-    bossGate.ts       stub — see Boss Gate TODOs below
-  src/game/proc/      shared seeded RNG + transit camera (Swarm + Anomaly)
+    boss-gate/        M2.5 playable — Gate Bulwark / destroy to open B / tells
+    bossGate.ts       registry entry (sceneKey BossGate)
+  src/game/proc/      shared seeded RNG + transit camera (Swarm / Anomaly / Boss Gate)
 
 M3 Full Map 1 loop
   src/milestones/m3-map1/
@@ -125,19 +141,17 @@ M3 Full Map 1 loop
 
 MVP **does not** include narrative logs, meta-upgrades at B, Map 2+, music beds, or art polish beyond readable silhouettes.
 
-## Boss Gate TODOs (M2.5 — still stubbed)
+## Map 1 chain TODOs (M3 — after M2.5)
 
-Do not start until Anomaly is standalone-playable.
+Boss Gate is standalone-playable. Do not start the full Map 1 chain until this gate is mergeable.
 
-- Standalone boot: `?phase=boss` / `?phase=boss-gate` (aliases already resolve; scene is still null → Drift fallback).
-- Heavy **Bulwark-class guard** (or Boss Gate unique). Named variant per GDD §7.
-- Default win: **destroy the guard to open Point B** (GDD §4.6). Bypass vs kill is still open (GDD Q6) — do not invent a Sensors/Utility bypass until Eduardo locks it.
-- Skill test of prior verbs: precise WASD, fuel dodge, intentional Space fire. Not auto-aim. Finite A→B, not an arena.
-- No music bed in MVP (full vision allows music here).
-- Greybox OK; pixel art is a later pass.
-- Playtest stills + one short mp4 under `docs/progress/` (`boss-*`) before merge.
-- Do not retune Drift / Debris / Gravity / Swarm / Anomaly unless a shared bug blocks the gate.
-- M3 chaining (full Map 1 A→B, permadeath, Play Again) stays after M2.5.
+- Sequential transit: Drift → Debris → Gravity → Swarm → Anomaly → Boss Gate for one run.
+- Carry hull / fuel / ammo across phases (or reset per phase — lock at M3).
+- Permadeath: hull 0 ends the **run**, not only the current standalone scene.
+- Restart: R / Play Again launches a **new probe at Drift**, no meta (GDD MVP).
+- Point B of phase N starts phase N+1; Boss Gate B is Map 1 recovered.
+- Keep standalone `?phase=` boots for debug.
+- Do not invent Boss Gate bypass; chaining must still destroy the guard to open B.
 
 ## Stack
 

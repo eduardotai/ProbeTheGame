@@ -57,6 +57,43 @@ type GravityDebugSnapshot = {
   pointBReached: boolean;
 };
 
+type BossDebugSnapshot = {
+  runState: 'playing' | 'recovered' | 'lost';
+  seed: number;
+  seedHex: string;
+  world: { width: number; height: number };
+  hull: number;
+  hullMax: number;
+  fuel: number;
+  fuelCapacity: number;
+  ammo: number;
+  ammoCapacity: number;
+  heat: number;
+  overheated: boolean;
+  elapsedMs: number;
+  toB: number;
+  zone: 'approach' | 'arena' | null;
+  gateOpen: boolean;
+  gateSealed: boolean;
+  pointBReached: boolean;
+  winRule: 'destroy-guard';
+  bulwark: {
+    alive: boolean;
+    hp: number;
+    hpMax: number;
+    phase: 'idle' | 'tell' | 'commit' | 'recover' | 'dead';
+    move: 'charge' | 'sweep' | 'slam' | null;
+    plateActive: boolean;
+    enraged: boolean;
+    x: number;
+    y: number;
+  };
+  probe: { x: number; y: number };
+  facing: number;
+  pointB: { x: number; y: number };
+  arena: { x0: number; x1: number };
+};
+
 type AnomalyDebugSnapshot = {
   runState: 'playing' | 'recovered' | 'lost';
   invertRule: 'controls-mirrored';
@@ -114,7 +151,7 @@ type SwarmDebugSnapshot = {
 };
 
 interface Window {
-  __bootPhase?: 'drift' | 'debris-field' | 'gravity-well' | 'swarm' | 'anomaly';
+  __bootPhase?: 'drift' | 'debris-field' | 'gravity-well' | 'swarm' | 'anomaly' | 'boss-gate';
   __probeTransitSeed?: number;
   __drift?: {
     snapshot: () => DriftDebugSnapshot;
@@ -141,6 +178,17 @@ interface Window {
     snapshot: () => AnomalyDebugSnapshot;
     placeProbe: (x: number, y: number) => void;
     hitProbe: (amount?: number) => number;
+    restart: () => void;
+    pause: () => void;
+    resume: () => void;
+  };
+  __boss?: {
+    snapshot: () => BossDebugSnapshot;
+    placeProbe: (x: number, y: number) => void;
+    hitProbe: (amount?: number) => number;
+    hitBulwark: (amount?: number) => number;
+    killBulwark: () => void;
+    forceTell: (move?: 'charge' | 'sweep' | 'slam') => void;
     restart: () => void;
     pause: () => void;
     resume: () => void;
