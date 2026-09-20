@@ -5,9 +5,9 @@ export class Hull {
   readonly max: number;
   current: number;
 
-  constructor(max = DriftTuning.hullMax) {
+  constructor(max: number = DriftTuning.hullMax, current: number = max) {
     this.max = max;
-    this.current = max;
+    this.current = Math.max(0, Math.min(max, current));
   }
 
   applyHit(amount = 1): number {

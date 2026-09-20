@@ -150,34 +150,63 @@ type SwarmDebugSnapshot = {
   zones: Array<{ kind: 'clear' | 'push'; x: number; y: number; w: number; h: number }>;
 };
 
+type Map1DebugSnapshot = {
+  mode: 'chain' | 'standalone';
+  phase: 'drift' | 'debris-field' | 'gravity-well' | 'swarm' | 'anomaly' | 'boss-gate';
+  status: 'idle' | 'playing' | 'advancing' | 'lost' | 'cleared';
+  loadout: {
+    hull: number;
+    hullMax: number;
+    fuel: number;
+    fuelCapacity: number;
+    ammo: number;
+    ammoCapacity: number;
+  };
+  carry: 'partial-refill';
+};
+
 interface Window {
   __bootPhase?: 'drift' | 'debris-field' | 'gravity-well' | 'swarm' | 'anomaly' | 'boss-gate';
   __probeTransitSeed?: number;
+  __map1?: {
+    mode: 'chain' | 'standalone';
+    phase: 'drift' | 'debris-field' | 'gravity-well' | 'swarm' | 'anomaly' | 'boss-gate';
+    carry: 'partial-refill';
+    snapshot: () => Map1DebugSnapshot;
+  };
   __drift?: {
     snapshot: () => DriftDebugSnapshot;
+    placeProbe: (x: number, y: number) => void;
+    hitProbe: (amount?: number) => number;
+    completePhase: () => void;
+    restart: () => void;
   };
   __debris?: {
     snapshot: () => DebrisDebugSnapshot;
     placeProbe: (x: number, y: number) => void;
     hitProbe: (amount?: number) => number;
+    completePhase: () => void;
     restart: () => void;
   };
   __gravity?: {
     snapshot: () => GravityDebugSnapshot;
     placeProbe: (x: number, y: number) => void;
     hitProbe: (amount?: number) => number;
+    completePhase: () => void;
     restart: () => void;
   };
   __swarm?: {
     snapshot: () => SwarmDebugSnapshot;
     placeProbe: (x: number, y: number) => void;
     hitProbe: (amount?: number) => number;
+    completePhase: () => void;
     restart: () => void;
   };
   __anomaly?: {
     snapshot: () => AnomalyDebugSnapshot;
     placeProbe: (x: number, y: number) => void;
     hitProbe: (amount?: number) => number;
+    completePhase: () => void;
     restart: () => void;
     pause: () => void;
     resume: () => void;
@@ -188,6 +217,7 @@ interface Window {
     hitProbe: (amount?: number) => number;
     hitBulwark: (amount?: number) => number;
     killBulwark: () => void;
+    completePhase: () => void;
     forceTell: (move?: 'charge' | 'sweep' | 'slam') => void;
     restart: () => void;
     pause: () => void;

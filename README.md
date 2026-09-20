@@ -4,7 +4,7 @@ Sci-fi roguelike set in **Thursday Arena** (Grokbot Galaxy). You are not a hero 
 
 > You are not a hero. You are a probe. You do not return.
 
-**Current playable gate: Milestone 2.5 — Boss Gate** (M1 Drift still boots by default). Phaser 3 + TypeScript + Vite. Pixel-art silhouettes (canvas atlas, nearest-neighbor). Keyboard-only.
+**Current playable gate: Milestone 3 — Full Map 1 chain.** Phaser 3 + TypeScript + Vite. Pixel-art silhouettes (canvas atlas, nearest-neighbor). Keyboard-only.
 
 Design source of truth (do not contradict):
 
@@ -22,23 +22,55 @@ npm install
 npm run dev
 ```
 
-Open the Vite URL (default `http://localhost:5173`). Boot → Preload → **Drift** (default).
+Open the Vite URL (default `http://localhost:5173`). Boot → Preload → **Map 1 chain** (default), starting at Drift.
 
 ```bash
 npm run build    # tsc --noEmit && vite build
 npm run preview  # serve the production bundle
 ```
 
+### Map 1 chain (PRD §7) — default
+
+One probe, six phases, same run:
+
+**Drift → Debris Field → Gravity Well → Swarm → Anomaly → Boss Gate**
+
+| Boot | URL |
+|------|-----|
+| Map 1 chain (default) | `/` |
+| Map 1 chain (explicit) | `?run=map1` |
+
+Reaching **B** in phase N starts phase N+1 (brief `TRANSIT` beat, then the next scene). Boss Gate B is **MAP 1 — PROBE RECOVERED** (no meta spend screen). Hull 0 is **permadeath**: the entire run ends. **R** / Play Again launches a **new probe at Drift**.
+
+Optional `&seed=12345` still locks the Swarm / Anomaly / Boss Gate spines for the page.
+
 ### Standalone phase boot (PRD §6)
+
+`?phase=` always wins over the chain. Use this to test or debug a single phase. **R** relaunches that phase, not Drift.
 
 | Phase | URL |
 |-------|-----|
-| Drift (default) | `/` or `?phase=drift` |
+| Drift | `?phase=drift` |
 | Debris Field | `?phase=debris` or `?phase=debris-field` |
 | Gravity Well | `?phase=gravity` or `?phase=gravity-well` |
-| Swarm | `?phase=swarm` (optional `&seed=12345` locks the spine) |
-| Anomaly | `?phase=anomaly` (optional `&seed=12345` locks the spine) |
-| Boss Gate | `?phase=boss` or `?phase=boss-gate` (optional `&seed=12345` locks the approach) |
+| Swarm | `?phase=swarm` (optional `&seed=12345`) |
+| Anomaly | `?phase=anomaly` (optional `&seed=12345`) |
+| Boss Gate | `?phase=boss` or `?phase=boss-gate` (optional `&seed=12345`) |
+
+## Between-phase carry (locked: partial refill)
+
+Skill still matters; the six-phase chain stays playable. Implemented in `src/milestones/m3-map1/carry.ts` (`MAP1_CARRY.id = 'partial-refill'`).
+
+| Resource | Carry into next phase | Gate refill at B |
+|----------|------------------------|------------------|
+| **Hull** | remaining | **+1**, capped at max (3) |
+| **Fuel** | leftover discarded | **full refill** |
+| **Ammo** | remaining | restore **50% of missing**, rounded up, capped at mag (28) |
+| **Heat** | discarded | cool / reset (not a carry resource) |
+
+Examples: hull 2 → 3 at the gate; hull 3 stays 3. Empty mag (0/28) enters the next fire-phase at 14/28; 10/28 becomes 19/28; a full mag stays 28. Fuel is always full at the next A.
+
+Standalone `?phase=` boots always start a fresh full loadout (hull 3 / fuel 100 / ammo 28). They do not read or write the Map 1 run.
 
 ## How to play
 
@@ -49,21 +81,23 @@ Keyboard only. No mouse aiming. End-card **click** is OK for next probe.
 | Move (facing follows thrust) | `WASD` or arrow keys |
 | Dodge (fuel + noise, brief i-frames) | `Shift` |
 | Fire (primary; facing from thrust, not pointer) | `Space` |
-| Next probe (after win or death, or mid-run) | `R` (or click the end card) |
+| Next probe | `R` (or click the end card) |
 
-`KeyboardController` exposes `consumeFirePressed()` (tap) and `isFireDown()` (hold). Swarm uses both so a tap still shoots and a hold sprays until heat/ammo gates it.
+In the **chain**, R / Play Again after death or Map 1 clear (and mid-run abandon) launches a new probe at **Drift**. In **standalone**, R relaunches the current phase.
+
+`KeyboardController` exposes `consumeFirePressed()` (tap) and `isFireDown()` (hold). Swarm / Anomaly / Boss Gate use both so a tap still shoots and a hold sprays until heat/ammo gates it.
 
 ### M1 Drift
 
-Launch at **A** (left). Cross open space to **B** (right). Hunters chase when they have **line of sight**. A few hard covers break vision. Dodging costs **fuel** and makes noise. Contact chips **hull**. Hull 0 ends the probe. Reaching B recovers it. Fire is bound globally but this phase has nothing to shoot.
+Launch at **A** (left). Cross open space to **B** (right). Hunters chase when they have **line of sight**. A few hard covers break vision. Dodging costs **fuel** and makes noise. Contact chips **hull**. Hull 0 ends the probe. Reaching B recovers it (chain: starts Debris Field). Fire is bound globally but this phase has nothing to shoot.
 
 ### M2.1 Debris Field
 
-Cover slabs block vision **both ways** (hunters behind debris are hidden; they cannot see you through slabs either). Hunters **funnel the gaps** instead of walking through rock. Two L-shaped **safe pockets** (northwest / southwest) hide you but **pause fuel regen** and burn the clock. The straight line to B is the trap — an **Ambusher** lunges when you commit to the last corridor. Reach B or die; **R** relaunches this phase (standalone).
+Cover slabs block vision **both ways** (hunters behind debris are hidden; they cannot see you through slabs either). Hunters **funnel the gaps** instead of walking through rock. Two L-shaped **safe pockets** (northwest / southwest) hide you but **pause fuel regen** and burn the clock. The straight line to B is the trap — an **Ambusher** lunges when you commit to the last corridor. Reach B or die.
 
 ### M2.2 Gravity Well
 
-A center mass pulls **always**. The **shortcut** is the A→B line that cuts north of the well: shorter, stronger pull, denser threats (two hunters + a Gravity Bulwark that anchors near the well). The **long way** loops the north rim: weaker pull, one hunter, slower. Fall inside the horizon and hull hits 0. Reach B or die; **R** relaunches this phase (standalone).
+A center mass pulls **always**. The **shortcut** is the A→B line that cuts north of the well: shorter, stronger pull, denser threats (two hunters + a Gravity Bulwark that anchors near the well). The **long way** loops the north rim: weaker pull, one hunter, slower. Fall inside the horizon and hull hits 0. Reach B or die.
 
 ### M2.3 Swarm
 
@@ -71,25 +105,23 @@ A **long horizontal transit** (world ~4600px, camera follows the probe). Seeded 
 
 Dozens of small **Swarmlings** pressure the whole run (denser near B). They **flash and lunge** after a short tell — dodge through the commit, do not auto-aim popcorn. **Heat** and **ammo** gate spray (short bursts only). Named variant: a **Splitter** dies into two smaller Swarmlings (no further split).
 
-Choice: **CLEAR** a pocket (spend ammo/heat, quieter lane) vs **PUSH** through contact damage toward B. Reach B or die; **R** relaunches Swarm (same seed for this page load unless you passed `?seed=`).
+Choice: **CLEAR** a pocket (spend ammo/heat, quieter lane) vs **PUSH** through contact damage toward B. Reach B or die.
 
 ### M2.4 Anomaly
 
-Exactly one Anomaly per Map 1 run later (after Swarm, before Boss Gate). This milestone ships it **standalone**.
+Exactly one Anomaly per Map 1 run (after Swarm, before Boss Gate).
 
 **Invert lock (this phase only): controls mirrored.** WASD and arrows reverse on both axes (`W` is down, `S` is up, `A` is right, `D` is left). Facing, dodge, and Space fire follow the inverted thrust — not the pointer. The HUD chip and the launch runway both spell it: `INVERT  CONTROLS MIRRORED  ·  W↓  S↑  A→  D←`.
 
-Why this invert (not silence-attracts): it is the more skill-readable Hades/Dead Cells check on precise WASD. Silence-attracts after Swarm's heat/ammo loop can collapse into holding Space, which fights the no-auto-aim north star.
-
-Long seeded A→B (~4400px, camera follows). Same `seed` → same covers and Echo homes. Quiet runway so you feel the invert before contact; then weave / pack / breathe toward B. Named variant: **Echo** (inverted Swarm tell — dims and shrinks, then lunges). One **Echo Prime** on the approach. Heat + ammo still gate spray. Reach B or die; **R** relaunches Anomaly.
+Long seeded A→B (~4400px, camera follows). Quiet runway so you feel the invert before contact; then weave / pack / breathe toward B. Named variant: **Echo** (inverted Swarm tell — dims and shrinks, then lunges). One **Echo Prime** on the approach. Heat + ammo still gate spray. Reach B or die.
 
 No music bed (MVP).
 
 ### M2.5 Boss Gate
 
-Standalone final Map 1 phase. Finite A→B approach (~3200px, camera follows) into a **sealed gate**. Shorter than Swarm/Anomaly, not a 10-second dash.
+Final Map 1 phase. Finite A→B approach (~3200px, camera follows) into a **sealed gate**. Shorter than Swarm/Anomaly, not a 10-second dash.
 
-Heavy **Gate Bulwark** (named variant) holds Point B. Default win: **destroy the guard to open B** (GDD §4.6 / Q6 — no Sensors/Utility bypass). You still have to fly to B after the gate opens.
+Heavy **Gate Bulwark** (named variant) holds Point B. Win: **destroy the guard to open B** (GDD §4.6 / Q6 — **no bypass**, even in the chain). You still have to fly to B after the gate opens.
 
 Skill test of prior verbs: WASD, fuel **Shift** dodge, **Space** fire (heat + ammo still gate spray). The Bulwark **telegraphs** then commits:
 
@@ -97,7 +129,7 @@ Skill test of prior verbs: WASD, fuel **Shift** dodge, **Space** fire (heat + am
 - **SWEEP TELL** — orange cone, then a fan of slow ward bolts to weave
 - **SLAM TELL** (enraged, half HP) — ring shockwave; dodge through the band
 
-Punishable mistakes: eating a charge, standing in the slam ring, dumping ammo into the plate. Reach B or die; **R** relaunches Boss Gate.
+Punishable mistakes: eating a charge, standing in the slam ring, dumping ammo into the plate. In the chain, reaching open B is **MAP 1 — PROBE RECOVERED**.
 
 No music bed (MVP).
 
@@ -117,41 +149,34 @@ M1 Drift (validation gate)  ← done
     pointB.ts         Point B overlap = recovered
       → playable Drift: probe, LOS hunt, fuel dodges, reach B or die
 
-M2 Phases 2–6 (one at a time, each standalone-bootable)
+M2 Phases 2–6 (one at a time, each standalone-bootable)  ← done
   src/milestones/m2-phases/
     phaseRegistry.ts  Map 1 order + registry
     debris-field/     M2.1 playable — cover / funnel gaps / pockets
-    debrisField.ts    registry entry (sceneKey DebrisField)
     gravity-well/     M2.2 playable — center pull / shortcut vs long way
-    gravityWell.ts    registry entry (sceneKey GravityWell)
     swarm/            M2.3 playable — long A→B spine / Swarmlings / heat+ammo
-    swarm.ts          registry entry (sceneKey Swarm)
     anomaly/          M2.4 playable — mirrored controls / Echo dim-tell / long spine
-    anomaly.ts        registry entry (sceneKey Anomaly)
     boss-gate/        M2.5 playable — Gate Bulwark / destroy to open B / tells
-    bossGate.ts       registry entry (sceneKey BossGate)
   src/game/proc/      shared seeded RNG + transit camera (Swarm / Anomaly / Boss Gate)
+  src/game/art/       pixel atlas (on main; M3 does not rewrite it)
 
-M3 Full Map 1 loop
+M3 Full Map 1 loop  ← done
   src/milestones/m3-map1/
     chain.ts          A→B sequential transit
+    carry.ts          partial-refill lock (hull +1 / fuel full / ammo 50% missing)
+    runSession.ts     one probe / one run; permadeath + Play Again at Drift
+    sceneBridge.ts    scene loadout, transit beat, HUD title
     permadeath.ts     hull 0 ends the run; no revive
     restart.ts        next probe = Play Again, no meta
 ```
 
-MVP **does not** include narrative logs, meta-upgrades at B, Map 2+, music beds, or the M3 Map 1 chain. Pixel-art silhouettes are in (this pass); they stay high-contrast and readable.
+MVP **does not** include narrative logs, meta-upgrades at B, Map 2+, or music beds. Pixel-art silhouettes are in (canvas atlas, nearest-neighbor).
 
-## Map 1 chain TODOs (M3 — after M2.5)
+## TODOs after M3
 
-Boss Gate is standalone-playable. Do not start the full Map 1 chain until this gate is mergeable.
+### Length pass (Drift / Debris / Gravity)
 
-- Sequential transit: Drift → Debris → Gravity → Swarm → Anomaly → Boss Gate for one run.
-- Carry hull / fuel / ammo across phases (or reset per phase — lock at M3).
-- Permadeath: hull 0 ends the **run**, not only the current standalone scene.
-- Restart: R / Play Again launches a **new probe at Drift**, no meta (GDD MVP).
-- Point B of phase N starts phase N+1; Boss Gate B is Map 1 recovered.
-- Keep standalone `?phase=` boots for debug.
-- Do not invent Boss Gate bypass; chaining must still destroy the guard to open B.
+Swarm, Anomaly, and Boss Gate are camera-follow transits (~3200–4600px). Drift, Debris Field, and Gravity Well are still single-screen 1280×720 rooms. A later pass should **elongate those three** into finite camera-follow A→B spines so Map 1 has VS-scale pressure the whole way, **without changing phase rules** (LOS + fuel; cover/funnels/pockets; pull + shortcut vs long way).
 
 ## Stack
 

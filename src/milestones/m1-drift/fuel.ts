@@ -6,9 +6,9 @@ export class FuelTank {
   current: number;
   private regenDelayMs = 0;
 
-  constructor(capacity = DriftTuning.fuelCapacity) {
+  constructor(capacity: number = DriftTuning.fuelCapacity, current: number = capacity) {
     this.capacity = capacity;
-    this.current = capacity;
+    this.current = Math.max(0, Math.min(capacity, current));
   }
 
   tryConsumeDodge(cost = DriftTuning.dodgeCost): boolean {

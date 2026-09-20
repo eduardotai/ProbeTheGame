@@ -14,7 +14,15 @@ import {
   tryDodge,
   type PointBTrigger,
 } from '../../milestones/m1-drift';
-import { isRunOver, onHullDepleted, requestNextProbe } from '../../milestones/m3-map1';
+import {
+  createPhaseEquipment,
+  exposeMap1Window,
+  formatPhaseHudLine,
+  isRunOver,
+  requestNextProbe,
+  resolvePhaseClear,
+  resolvePhaseLost,
+} from '../../milestones/m3-map1';
 import {
   AnomalyTuning,
   contactRadiusFor,
@@ -88,9 +96,10 @@ export class AnomalyScene extends Phaser.Scene {
     this.dodgeUntil = 0;
     this.echoes = [];
     this.sfx = new Sfx();
-    this.weapon = new SwarmWeapon();
-    this.fuel = new FuelTank();
-    this.hull = new Hull();
+    const kit = createPhaseEquipment('anomaly');
+    this.weapon = kit.weapon;
+    this.fuel = kit.fuel;
+    this.hull = kit.hull;
 
     this.cameras.main.setBackgroundColor(Palette.void);
     setTransitBounds(this, this.layout.world);
@@ -356,25 +365,21 @@ export class AnomalyScene extends Phaser.Scene {
     this.runState = 'recovered';
     this.freezeField();
     this.sfx.recovered();
-    this.banner.setColor('#5ee0ff');
-    this.banner.setText('POINT B — PROBE RECOVERED');
-    this.banner.setVisible(true);
-    this.hint.setText('Press R or click — launch next probe');
-    this.hint.setVisible(true);
+    resolvePhaseClear(
+      this,
+      'anomaly',
+      { hull: this.hull, fuel: this.fuel, weapon: this.weapon },
+      { banner: this.banner, hint: this.hint },
+    );
     this.hud.setText(this.buildHud());
   }
 
   private loseRun(): void {
-    onHullDepleted();
     this.runState = 'lost';
     this.freezeField();
     this.sfx.death();
     this.probe.setTint(0x664444);
-    this.banner.setColor('#ff6b6b');
-    this.banner.setText('HULL 0 — PROBE LOST');
-    this.banner.setVisible(true);
-    this.hint.setText('Press R or click — launch next probe');
-    this.hint.setVisible(true);
+    resolvePhaseLost({ banner: this.banner, hint: this.hint });
     this.hud.setText(this.buildHud());
   }
 
@@ -414,7 +419,11 @@ export class AnomalyScene extends Phaser.Scene {
     const echoState = telling ? 'DIM TELL' : 'ECHO';
     const toB = Math.max(0, Math.round(this.layout.pointB.x - this.probe.x));
     return [
-      `ANOMALY  ·  M2.4  SEED ${formatSeed(this.layout.seed)}  ${INVERT_RULE_LABEL}${protectedNote}`,
+      formatPhaseHudLine(
+        'anomaly',
+        'ANOMALY  ·  M2.4',
+        `  SEED ${formatSeed(this.layout.seed)}  ${INVERT_RULE_LABEL}${protectedNote}`,
+      ),
       `HULL ${this.hull.current}/${this.hull.max} ${this.hull.toBar()}    FUEL ${Math.floor(this.fuel.current)}/${this.fuel.capacity} ${this.fuel.toBar()}`,
       `AMMO ${ammoLabel} ${mag.toBar()}    HEAT ${heat.toBar()} ${heatLabel}    ${zoneLabel}    ${echoState} ${alive}    TO B ${toB}    CLOCK ${formatClock(this.elapsedMs)}`,
       `${INVERT_BIND_HINT}   Shift dodge   Space fire   R next probe   keyboard only`,
@@ -477,6 +486,9 @@ export class AnomalyScene extends Phaser.Scene {
       restart: () => {
         requestNextProbe(this);
       },
+      completePhase: () => {
+        this.completeIfPlaying();
+      },
       pause: () => {
         this.scene.pause();
       },
@@ -488,7 +500,7 @@ export class AnomalyScene extends Phaser.Scene {
       },
     };
     (window as Window).__anomaly = debug;
-    (window as Window).__bootPhase = 'anomaly';
+    exposeMap1Window('anomaly');
   }
 }
 

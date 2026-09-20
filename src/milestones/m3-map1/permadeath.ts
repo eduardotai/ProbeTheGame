@@ -1,11 +1,16 @@
+import { isChainMode, markRunLost } from './runSession';
+
 /**
- * Permadeath stub (GDD §2 / PRD §7).
+ * Permadeath (GDD §2 / PRD §7).
  * Hull 0 ends the run immediately. No mid-run revive.
+ * In Map 1 chain mode this ends the entire run, not only the current phase.
  */
 export type RunEndReason = 'hull-depleted' | 'map-cleared';
 
 export function onHullDepleted(): RunEndReason {
-  // TODO(M3): freeze transit, show death beat, offer next probe. No revive.
+  if (isChainMode()) {
+    markRunLost();
+  }
   return 'hull-depleted';
 }
 

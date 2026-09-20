@@ -21,7 +21,16 @@ import {
   type NoisePulse,
   type PointBTrigger,
 } from '../../milestones/m1-drift';
-import { isRunOver, onHullDepleted, requestNextProbe } from '../../milestones/m3-map1';
+import {
+  createPhaseEquipment,
+  exposeMap1Window,
+  formatPhaseHudLine,
+  isRunOver,
+  requestNextProbe,
+  resetViewportCamera,
+  resolvePhaseClear,
+  resolvePhaseLost,
+} from '../../milestones/m3-map1';
 import {
   applyGravityPull,
   createGravityBulwark,
@@ -91,12 +100,14 @@ export class GravityWellScene extends Phaser.Scene {
     this.sfx = new Sfx();
 
     this.cameras.main.setBackgroundColor(Palette.void);
+    resetViewportCamera(this, World.width, World.height);
     this.physics.world.setBounds(0, 0, World.width, World.height);
     paintStarfield(this, World.width, World.height, Palette.wellRim);
     paintGravityField(this);
 
-    this.fuel = new FuelTank();
-    this.hull = new Hull();
+    const kit = createPhaseEquipment('gravity-well');
+    this.fuel = kit.fuel;
+    this.hull = kit.hull;
     this.covers = createGravityCovers(this);
 
     this.probe = createProbe(this, GRAVITY_SPAWN.probe.x, GRAVITY_SPAWN.probe.y);
@@ -320,25 +331,16 @@ export class GravityWellScene extends Phaser.Scene {
     this.runState = 'recovered';
     this.freezeField();
     this.sfx.recovered();
-    this.banner.setColor('#5ee0ff');
-    this.banner.setText('POINT B — PROBE RECOVERED');
-    this.banner.setVisible(true);
-    this.hint.setText('Press R or click — launch next probe');
-    this.hint.setVisible(true);
+    resolvePhaseClear(this, 'gravity-well', { hull: this.hull, fuel: this.fuel }, { banner: this.banner, hint: this.hint });
     this.hud.setText(this.buildHud());
   }
 
   private loseRun(): void {
-    onHullDepleted();
     this.runState = 'lost';
     this.freezeField();
     this.sfx.death();
     this.probe.setTint(0x664444);
-    this.banner.setColor('#ff6b6b');
-    this.banner.setText('HULL 0 — PROBE LOST');
-    this.banner.setVisible(true);
-    this.hint.setText('Press R or click — launch next probe');
-    this.hint.setVisible(true);
+    resolvePhaseLost({ banner: this.banner, hint: this.hint });
     this.hud.setText(this.buildHud());
   }
 
@@ -389,7 +391,7 @@ export class GravityWellScene extends Phaser.Scene {
       band === 'horizon' ? 'HORIZON' : this.pullAccel >= 480 ? 'STRONG' : this.pullAccel >= 260 ? 'FIRM' : 'WEAK';
     const routeLabel = band === 'horizon' ? 'WELL' : band === 'shortcut' ? 'SHORTCUT' : 'LONG WAY';
     return [
-      `GRAVITY WELL  ·  M2.2${protectedNote}`,
+      formatPhaseHudLine('gravity-well', 'GRAVITY WELL  ·  M2.2', protectedNote),
       `HULL ${this.hull.current}/${this.hull.max} ${this.hull.toBar()}    FUEL ${Math.floor(this.fuel.current)}/${this.fuel.capacity} ${this.fuel.toBar()}`,
       `PULL ${pullLabel}  ·  ${routeLabel}    HUNTER ${hunterState}    CLOCK ${formatClock(this.elapsedMs)}`,
       'WASD/arrows move   Shift dodge   R next probe   keyboard only',
@@ -451,9 +453,12 @@ export class GravityWellScene extends Phaser.Scene {
       restart: () => {
         requestNextProbe(this);
       },
+      completePhase: () => {
+        this.completeIfPlaying();
+      },
     };
     (window as Window).__gravity = debug;
-    (window as Window).__bootPhase = 'gravity-well';
+    exposeMap1Window('gravity-well');
   }
 }
 
