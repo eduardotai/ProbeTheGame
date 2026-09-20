@@ -4,9 +4,25 @@ Playtest stills and clips. Pixel-art atlas is on main (canvas, nearest-neighbor)
 
 ## M3 Map 1 chain
 
-Default boot is the six-phase run. Carry lock: **partial refill** (hull +1 / fuel full / ammo 50% of missing). Boss Gate still requires destroying the guard to open B.
+Default boot is the six-phase run (`/` or `?run=map1`). Carry lock: **partial refill** (hull +1 / fuel full / ammo 50% of missing). Boss Gate still requires **destroying the guard** to open B.
 
-Stills and the transition clip land in this folder as `m3-*` once playtest capture runs.
+| File | What it shows |
+|------|----------------|
+| `m3-chain-spawn.png` | Default chain boot — `MAP 1 · 1/6 DRIFT` |
+| `m3-transit-debris.png` | Drift B → `TRANSIT — DEBRIS FIELD` with hull +1 / fuel full / ammo |
+| `m3-debris-chain.png` | Same probe in Debris — `MAP 1 · 2/6`, hull refilled to 3 |
+| `m3-transit-gravity.png` | Debris B → `TRANSIT — GRAVITY WELL` |
+| `m3-gravity-chain.png` | Same probe in Gravity Well — `MAP 1 · 3/6` |
+| `m3-run-lost.png` | Hull 0 on Gravity — **PROBE LOST**, hint launches next probe at Drift |
+| `m3-death-resets-drift.png` | After R — new probe at Drift `1/6`, full loadout |
+| `m3-swarm-chain.png` | Chain Swarm `4/6` |
+| `m3-anomaly-chain.png` | Chain Anomaly `5/6`, controls mirrored |
+| `m3-boss-sealed.png` | Chain Boss Gate `6/6` **GATE SEALED** — completePhase does not open B |
+| `m3-boss-gate-open.png` | Guard destroyed, **GATE OPEN** |
+| `m3-map1-recovered.png` | Open B — **MAP 1 — PROBE RECOVERED** (probe at B, no meta screen) |
+| `m3-standalone-drift.png` | `?phase=drift` still boots Drift (`DRIFT · M1`, not MAP 1) |
+| `m3-standalone-boss.png` | `?phase=boss` still boots sealed Boss Gate (`BOSS GATE · M2.5`) |
+| `m3-chain-transitions.mp4` | Three transitions: Drift → Debris → Gravity → Swarm |
 
 ## Pixel-art pass
 
