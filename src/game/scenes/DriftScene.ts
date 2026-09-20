@@ -23,7 +23,6 @@ import {
   type NoisePulse,
   type PointBTrigger,
 } from '../../milestones/m1-drift';
-import { phaseRegistry } from '../../milestones/m2-phases';
 import { isRunOver, onHullDepleted, requestNextProbe } from '../../milestones/m3-map1';
 
 type RunState = 'playing' | 'recovered' | 'lost';
@@ -129,7 +128,7 @@ export class DriftScene extends Phaser.Scene {
       .setDepth(20);
 
     this.banner = this.add
-      .text(World.width / 2, 96, '', {
+      .text(World.width / 2, 300, '', {
         fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
         fontSize: '22px',
         color: '#5ee0ff',
@@ -139,7 +138,7 @@ export class DriftScene extends Phaser.Scene {
       .setDepth(21);
 
     this.hint = this.add
-      .text(World.width / 2, 132, '', {
+      .text(World.width / 2, 338, '', {
         fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
         fontSize: '14px',
         color: '#8aa0b4',
@@ -256,6 +255,7 @@ export class DriftScene extends Phaser.Scene {
     this.banner.setVisible(true);
     this.hint.setText('Press R or click — launch next probe');
     this.hint.setVisible(true);
+    this.hud.setText(this.buildHud());
   }
 
   private loseRun(): void {
@@ -269,6 +269,7 @@ export class DriftScene extends Phaser.Scene {
     this.banner.setVisible(true);
     this.hint.setText('Press R or click — launch next probe');
     this.hint.setVisible(true);
+    this.hud.setText(this.buildHud());
   }
 
   private freezeField(): void {
@@ -276,20 +277,32 @@ export class DriftScene extends Phaser.Scene {
     for (const hunter of this.hunters) {
       haltHunter(hunter);
     }
+    for (const line of this.losLines) {
+      line.setAlpha(0);
+    }
     this.physics.pause();
   }
 
   private buildHud(): string {
     const locked = this.hunters.some((hunter) => hunter.seesTarget);
     const hunting = this.hunters.some((hunter) => hunter.lastSeen !== null);
-    const hunterState = locked ? 'LOS LOCK' : hunting ? 'LAST SEEN' : 'PATROL';
-    const protectedNote = this.time.now < this.spawnProtectedUntil ? '  LAUNCH WINDOW' : '';
+    const hunterState =
+      this.runState === 'recovered'
+        ? 'CLEAR'
+        : this.runState === 'lost'
+          ? 'KILL'
+          : locked
+            ? 'LOS LOCK'
+            : hunting
+              ? 'LAST SEEN'
+              : 'PATROL';
+    const protectedNote =
+      this.runState === 'playing' && this.time.now < this.spawnProtectedUntil ? '  LAUNCH WINDOW' : '';
     return [
-      `DRIFT  ·  ${phaseRegistry.drift.title}  ·  M1${protectedNote}`,
+      `DRIFT  ·  M1${protectedNote}`,
       `HULL ${this.hull.current}/${this.hull.max} ${this.hull.toBar()}    FUEL ${Math.floor(this.fuel.current)}/${this.fuel.capacity} ${this.fuel.toBar()}`,
       `HUNTER ${hunterState}`,
-      'WASD / arrows  move    Shift  dodge (fuel + noise)    R  next probe',
-      'Keyboard only. No mouse aiming.',
+      'WASD/arrows move   Shift dodge   R next probe   keyboard only',
     ].join('\n');
   }
 
