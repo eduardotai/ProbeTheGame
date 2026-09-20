@@ -1,4 +1,4 @@
-/** High-contrast greybox palette (GDD §9). Near-black void, sparse neons. */
+/** High-contrast pixel palette (GDD §9). Near-black void, sparse neons. */
 export const Palette = {
   void: 0x05070a,
   probeBody: 0xc8e7ff,
@@ -51,13 +51,30 @@ export const TextureKey = {
   Hunter: 'hunter',
   Ambusher: 'ambusher',
   Bulwark: 'bulwark',
+  GateBulwark: 'gate-bulwark',
   Swarmling: 'swarmling',
   Splitter: 'splitter',
   Bolt: 'bolt',
   Echo: 'echo',
   EchoPrime: 'echo-prime',
   WardBolt: 'ward-bolt',
+  PointA: 'point-a',
   PointB: 'point-b',
+  WellCore: 'well-core',
+  Cover: 'cover-steel',
+  CoverDebris: 'cover-debris',
+  CoverAnomaly: 'cover-anomaly',
+  CoverGate: 'cover-gate',
+  PocketFloor: 'pocket-floor',
+  ZoneFloor: 'zone-floor',
+  ZoneFloorWarm: 'zone-floor-warm',
+  ZoneFloorAnomaly: 'zone-floor-anomaly',
+  ZoneFloorGate: 'zone-floor-gate',
+  Lane: 'lane',
+  LaneAnomaly: 'lane-anomaly',
+  LaneGate: 'lane-gate',
+  GateWall: 'gate-wall',
+  GateWallOpen: 'gate-wall-open',
 } as const;
 
 /** Theme lock (GDD §1). */

@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { Palette, World } from '../../../game/constants';
+import { Palette, TextureKey, World } from '../../../game/constants';
+import { createTiledCovers, paintPixelRing } from '../../../game/art';
 import type { DriftCover } from '../../m1-drift';
 import { GravityTuning } from './tuning';
 
@@ -57,27 +58,23 @@ export function paintGravityField(scene: Phaser.Scene): void {
   const g = scene.add.graphics().setDepth(1);
   const { x, y } = GravityTuning.well;
   const rings: ReadonlyArray<{ r: number; fill: number; line: number; fa: number; la: number }> = [
-    { r: 360, fill: 0x243044, line: Palette.longWay, fa: 0.07, la: 0.22 },
-    { r: 260, fill: 0x3a2444, line: Palette.wellField, fa: 0.09, la: 0.28 },
-    { r: GravityTuning.shortcutRadius, fill: 0x5a2038, line: Palette.shortcut, fa: 0.12, la: 0.4 },
-    { r: 148, fill: 0x6a1830, line: Palette.wellRim, fa: 0.16, la: 0.5 },
+    { r: 360, fill: 0x243044, line: Palette.longWay, fa: 0.07, la: 0.35 },
+    { r: 260, fill: 0x3a2444, line: Palette.wellField, fa: 0.09, la: 0.4 },
+    { r: GravityTuning.shortcutRadius, fill: 0x5a2038, line: Palette.shortcut, fa: 0.12, la: 0.5 },
+    { r: 148, fill: 0x6a1830, line: Palette.wellRim, fa: 0.16, la: 0.6 },
   ];
   for (const ring of rings) {
-    g.fillStyle(ring.fill, ring.fa);
-    g.fillCircle(x, y, ring.r);
-    g.lineStyle(2, ring.line, ring.la);
-    g.strokeCircle(x, y, ring.r);
+    paintPixelRing(g, x, y, ring.r, ring.fill, ring.fa, true);
+    paintPixelRing(g, x, y, ring.r, ring.line, ring.la, false);
   }
 
-  g.fillStyle(0x0c0608, 1);
-  g.fillCircle(x, y, GravityTuning.massRadius);
-  g.lineStyle(2, Palette.wellRim, 0.9);
-  g.strokeCircle(x, y, GravityTuning.massRadius);
-  g.lineStyle(1, Palette.hull, 0.55);
-  g.strokeCircle(x, y, GravityTuning.horizonRadius);
+  paintPixelRing(g, x, y, GravityTuning.massRadius, 0x0c0608, 1, true);
+  paintPixelRing(g, x, y, GravityTuning.massRadius, Palette.wellRim, 0.95, false);
+  paintPixelRing(g, x, y, GravityTuning.horizonRadius, Palette.hull, 0.7, false);
+  scene.add.image(x, y, TextureKey.WellCore).setDepth(3);
 
-  paintPath(g, SHORTCUT_PATH, Palette.shortcut, 0.55);
-  paintPath(g, LONG_PATH, Palette.longWay, 0.5);
+  paintPath(g, SHORTCUT_PATH, Palette.shortcut, 0.7);
+  paintPath(g, LONG_PATH, Palette.longWay, 0.65);
 
   const labelStyle = {
     fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
@@ -101,15 +98,7 @@ export function paintGravityField(scene: Phaser.Scene): void {
 }
 
 export function createGravityCovers(scene: Phaser.Scene): GravityCover[] {
-  return COVER_SPECS.map((spec) => {
-    const visual = scene.add
-      .rectangle(spec.x, spec.y, spec.w, spec.h, Palette.cover, 1)
-      .setStrokeStyle(1, Palette.coverEdge, 0.9)
-      .setDepth(4);
-    scene.physics.add.existing(visual, true);
-    const rect = new Phaser.Geom.Rectangle(spec.x - spec.w / 2, spec.y - spec.h / 2, spec.w, spec.h);
-    return { visual, rect };
-  });
+  return createTiledCovers(scene, COVER_SPECS, 'debris');
 }
 
 function paintPath(

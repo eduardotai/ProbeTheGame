@@ -31,6 +31,10 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
       debug: false,
     },
   },
+  render: {
+    pixelArt: true,
+    antialias: false,
+  },
   input: {
     keyboard: true,
     mouse: true,

@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { Palette, TextureKey } from '../../../game/constants';
+import { TextureKey } from '../../../game/constants';
 import { hasLineOfSight, type NoisePulse } from '../../m1-drift';
 import type { NavGrid, Vec2 } from './navGrid';
 import { DebrisTuning } from './tuning';
@@ -22,7 +22,6 @@ export type DebrisAmbusher = {
  */
 export function createDebrisAmbusher(scene: Phaser.Scene, x: number, y: number): DebrisAmbusher {
   const sprite = scene.physics.add.image(x, y, TextureKey.Ambusher);
-  sprite.setTint(Palette.ambusher);
   sprite.setDamping(true);
   sprite.setDrag(DebrisTuning.hunterDrag);
   sprite.setMaxVelocity(DebrisTuning.hunterMaxSpeed);

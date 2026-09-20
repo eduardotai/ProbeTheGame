@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { Palette, TextureKey } from '../../../game/constants';
+import { TextureKey } from '../../../game/constants';
 import { hasLineOfSight, type NoisePulse } from '../../m1-drift';
 import { distanceToWell, pushOutOfWell, type Vec2 } from './gravity';
 import { GravityTuning } from './tuning';
@@ -18,7 +18,6 @@ export type GravityBulwark = {
  */
 export function createGravityBulwark(scene: Phaser.Scene, x: number, y: number): GravityBulwark {
   const sprite = scene.physics.add.image(x, y, TextureKey.Bulwark);
-  sprite.setTint(Palette.bulwark);
   sprite.setScale(1.55);
   sprite.setDamping(true);
   sprite.setDrag(GravityTuning.bulwarkDrag);

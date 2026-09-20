@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { Palette, World } from '../../../game/constants';
+import { TextureKey, World } from '../../../game/constants';
+import { createTiledCovers, paintTiledFloor } from '../../../game/art';
 import type { DriftCover } from '../../m1-drift';
 
 export type DebrisCover = DriftCover;
@@ -94,20 +95,10 @@ export const DEBRIS_SPAWN = {
 
 export function createDebrisCovers(scene: Phaser.Scene): DebrisCover[] {
   for (const floor of POCKET_FLOORS) {
-    scene.add
-      .rectangle(floor.x + floor.w / 2, floor.y + floor.h / 2, floor.w, floor.h, Palette.pocket, 1)
-      .setDepth(1);
+    paintTiledFloor(scene, floor.x, floor.y, floor.w, floor.h, TextureKey.PocketFloor, 1, 1);
   }
 
-  return COVER_SPECS.map((spec) => {
-    const visual = scene.add
-      .rectangle(spec.x, spec.y, spec.w, spec.h, Palette.cover, 1)
-      .setStrokeStyle(1, Palette.coverEdge, 0.95)
-      .setDepth(4);
-    scene.physics.add.existing(visual, true);
-    const rect = new Phaser.Geom.Rectangle(spec.x - spec.w / 2, spec.y - spec.h / 2, spec.w, spec.h);
-    return { visual, rect };
-  });
+  return createTiledCovers(scene, COVER_SPECS, 'debris');
 }
 
 export function isInSafePocket(x: number, y: number): boolean {

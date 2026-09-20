@@ -40,8 +40,7 @@ export type GateBulwark = {
  * Slow, high HP, blocks the sealed gate. Readable tells, punishable commits.
  */
 export function createGateBulwark(scene: Phaser.Scene, x: number, y: number): GateBulwark {
-  const sprite = scene.physics.add.image(x, y, TextureKey.Bulwark);
-  sprite.setTint(Palette.bulwark);
+  const sprite = scene.physics.add.image(x, y, TextureKey.GateBulwark);
   sprite.setScale(BossGateTuning.bulwarkScale);
   sprite.setDamping(true);
   sprite.setDrag(BossGateTuning.bulwarkDrag);
@@ -127,7 +126,9 @@ export function updateGateBulwark(
 
   sprite.setAlpha(1);
   sprite.clearTint();
-  sprite.setTint(bulwark.enraged ? Palette.gate : Palette.bulwark);
+  if (bulwark.enraged) {
+    sprite.setTint(Palette.gate);
+  }
   sprite.setScale(bulwark.baseScale);
   body.setMaxVelocity(BossGateTuning.bulwarkMaxSpeed);
 
@@ -309,7 +310,9 @@ function restIdle(bulwark: GateBulwark): void {
   bulwark.plateActive = false;
   bulwark.sprite.setAlpha(1);
   bulwark.sprite.clearTint();
-  bulwark.sprite.setTint(bulwark.enraged ? Palette.gate : Palette.bulwark);
+  if (bulwark.enraged) {
+    bulwark.sprite.setTint(Palette.gate);
+  }
 }
 
 function pulseTell(bulwark: GateBulwark, now: number): void {

@@ -4,7 +4,7 @@ Sci-fi roguelike set in **Thursday Arena** (Grokbot Galaxy). You are not a hero 
 
 > You are not a hero. You are a probe. You do not return.
 
-**Current playable gate: Milestone 2.5 — Boss Gate** (M1 Drift still boots by default). Phaser 3 + TypeScript + Vite. Greybox silhouettes. Keyboard-only.
+**Current playable gate: Milestone 2.5 — Boss Gate** (M1 Drift still boots by default). Phaser 3 + TypeScript + Vite. Pixel-art silhouettes (canvas atlas, nearest-neighbor). Keyboard-only.
 
 Design source of truth (do not contradict):
 
@@ -139,7 +139,7 @@ M3 Full Map 1 loop
     restart.ts        next probe = Play Again, no meta
 ```
 
-MVP **does not** include narrative logs, meta-upgrades at B, Map 2+, music beds, or art polish beyond readable silhouettes.
+MVP **does not** include narrative logs, meta-upgrades at B, Map 2+, music beds, or the M3 Map 1 chain. Pixel-art silhouettes are in (this pass); they stay high-contrast and readable.
 
 ## Map 1 chain TODOs (M3 — after M2.5)
 
