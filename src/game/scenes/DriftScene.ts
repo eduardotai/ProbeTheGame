@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { Palette, SceneKey, THEME_LINE, World } from '../constants';
+import { paintStarfield, placePointA } from '../art';
 import { KeyboardController } from '../input/KeyboardController';
 import { Sfx } from '../audio/Sfx';
 import {
@@ -64,21 +65,14 @@ export class DriftScene extends Phaser.Scene {
 
     this.cameras.main.setBackgroundColor(Palette.void);
     this.physics.world.setBounds(0, 0, World.width, World.height);
-    this.drawStarfield();
+    paintStarfield(this, World.width, World.height, Palette.pointB);
 
     this.fuel = new FuelTank();
     this.hull = new Hull();
     this.covers = createDriftCovers(this);
 
     this.probe = createProbe(this, 140, World.height / 2);
-    this.add
-      .text(140, World.height / 2 + 36, 'A', {
-        fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
-        fontSize: '14px',
-        color: '#8aa0b4',
-      })
-      .setOrigin(0.5, 0)
-      .setDepth(6);
+    placePointA(this, 140, World.height / 2);
 
     this.hunters = [
       createLosHunter(this, 640, 80),
@@ -328,14 +322,4 @@ export class DriftScene extends Phaser.Scene {
     (window as Window).__bootPhase = 'drift';
   }
 
-  private drawStarfield(): void {
-    const g = this.add.graphics().setDepth(0);
-    g.fillStyle(0xffffff, 1);
-    for (let i = 0; i < 80; i += 1) {
-      const x = (i * 97) % World.width;
-      const y = (i * 53) % World.height;
-      const size = i % 7 === 0 ? 2 : 1;
-      g.fillRect(x, y, size, size);
-    }
-  }
 }

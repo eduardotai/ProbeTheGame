@@ -1,12 +1,20 @@
 import Phaser from 'phaser';
-import { Palette, TextureKey } from '../../../game/constants';
+import { TextureKey } from '../../../game/constants';
+import {
+  createTiledCovers,
+  paintLane,
+  paintPixelLine,
+  paintStarfield,
+  paintTiledFloor,
+  placePointA,
+} from '../../../game/art';
 import type { DriftCover } from '../../m1-drift';
 import type { BossGateLayout, CoverSpec, TransitZone } from './procSpine';
 
 export type BossCover = DriftCover;
 
 export type GateWall = {
-  visual: Phaser.GameObjects.Rectangle;
+  visual: Phaser.GameObjects.TileSprite;
   label: Phaser.GameObjects.Text;
   sealed: boolean;
 };
@@ -22,23 +30,12 @@ export type SealedPointB = {
 };
 
 export function createBossCovers(scene: Phaser.Scene, specs: readonly CoverSpec[]): BossCover[] {
-  return specs.map((spec) => {
-    const visual = scene.add
-      .rectangle(spec.x, spec.y, spec.w, spec.h, Palette.cover, 1)
-      .setStrokeStyle(1, Palette.gate, 0.7)
-      .setDepth(4);
-    scene.physics.add.existing(visual, true);
-    const rect = new Phaser.Geom.Rectangle(spec.x - spec.w / 2, spec.y - spec.h / 2, spec.w, spec.h);
-    return { visual, rect };
-  });
+  return createTiledCovers(scene, specs, 'gate');
 }
 
 export function createGateWall(scene: Phaser.Scene, layout: BossGateLayout): GateWall {
   const h = layout.world.height;
-  const visual = scene.add
-    .rectangle(layout.gate.x, h / 2, layout.gate.w, h, Palette.cover, 1)
-    .setStrokeStyle(2, Palette.gate, 0.95)
-    .setDepth(5);
+  const visual = scene.add.tileSprite(layout.gate.x, h / 2, layout.gate.w, h, TextureKey.GateWall).setDepth(5);
   scene.physics.add.existing(visual, true);
 
   const label = scene.add
@@ -64,8 +61,8 @@ export function openGateWall(gate: GateWall): void {
   if (body) {
     body.enable = false;
   }
-  gate.visual.setAlpha(0.18);
-  gate.visual.setStrokeStyle(1, Palette.pointB, 0.55);
+  gate.visual.setTexture(TextureKey.GateWallOpen);
+  gate.visual.setAlpha(0.85);
   gate.label.setColor('#5ee0ff');
   gate.label.setText('OPEN');
 }
@@ -119,43 +116,25 @@ export function createSealedPointB(scene: Phaser.Scene, x: number, y: number): S
 }
 
 export function paintBossField(scene: Phaser.Scene, layout: BossGateLayout): void {
+  paintStarfield(scene, layout.world.width, layout.world.height, 0xff8a5a, 180);
+
   const g = scene.add.graphics().setDepth(1);
-  g.fillStyle(0xffffff, 1);
-  for (let i = 0; i < 180; i += 1) {
-    const x = (i * 97) % layout.world.width;
-    const y = (i * 53) % layout.world.height;
-    const size = i % 7 === 0 ? 2 : 1;
-    g.fillRect(x, y, size, size);
-  }
-
   for (const zone of layout.zones) {
-    paintZone(scene, g, zone);
+    paintZone(scene, zone);
   }
 
-  g.lineStyle(3, Palette.gate, 0.28);
   for (const scar of layout.scars) {
-    g.beginPath();
-    g.moveTo(scar.x0, scar.y0);
-    g.lineTo(scar.x1, scar.y1);
-    g.strokePath();
+    paintPixelLine(g, scar.x0, scar.y0, scar.x1, scar.y1, 0x8a3a4a, 0.45);
   }
 
-  g.fillStyle(Palette.gate, 0.5);
   for (const segment of layout.segments) {
     if (segment.kind === 'launch' || segment.kind === 'gate') {
       continue;
     }
-    g.fillRect(segment.x0 + 8, segment.laneY - 2, Math.max(4, segment.x1 - segment.x0 - 16), 4);
+    paintLane(scene, segment.x0, segment.x1, segment.laneY, TextureKey.LaneGate);
   }
 
-  scene.add
-    .text(layout.probe.x, layout.probe.y + 36, 'A', {
-      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
-      fontSize: '14px',
-      color: '#8aa0b4',
-    })
-    .setOrigin(0.5, 0)
-    .setDepth(6);
+  placePointA(scene, layout.probe.x, layout.probe.y);
 
   scene.add
     .text(layout.probe.x + 230, 188, 'BOSS GATE', {
@@ -196,11 +175,10 @@ export function paintBossField(scene: Phaser.Scene, layout: BossGateLayout): voi
     .setAlpha(0.75);
 }
 
-function paintZone(scene: Phaser.Scene, g: Phaser.GameObjects.Graphics, zone: TransitZone): void {
+function paintZone(scene: Phaser.Scene, zone: TransitZone): void {
   const cx = zone.x + zone.w / 2;
   if (zone.kind === 'approach') {
-    g.fillStyle(Palette.longWay, 0.06);
-    g.fillRect(zone.x, zone.y, zone.w, zone.h);
+    paintTiledFloor(scene, zone.x, zone.y, zone.w, zone.h, TextureKey.ZoneFloor, 1, 0.5);
     scene.add
       .text(cx, zone.y + 16, 'APPROACH', {
         fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
@@ -212,8 +190,7 @@ function paintZone(scene: Phaser.Scene, g: Phaser.GameObjects.Graphics, zone: Tr
       .setAlpha(0.6);
     return;
   }
-  g.fillStyle(Palette.gate, 0.08);
-  g.fillRect(zone.x, zone.y, zone.w, zone.h);
+  paintTiledFloor(scene, zone.x, zone.y, zone.w, zone.h, TextureKey.ZoneFloorGate, 1, 0.55);
   scene.add
     .text(cx, zone.y + 16, 'ARENA', {
       fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',

@@ -54,10 +54,36 @@ export function updateShockwave(wave: Shockwave, deltaMs: number): void {
   }
   wave.radius += (BossGateTuning.slamGrowPerSec * deltaMs) / 1000;
   wave.graphics.clear();
-  wave.graphics.lineStyle(4, 0xff8a5a, 0.85);
-  wave.graphics.strokeCircle(wave.x, wave.y, wave.radius);
-  wave.graphics.lineStyle(10, 0xc45a6a, 0.22);
-  wave.graphics.strokeCircle(wave.x, wave.y, wave.radius);
+  const band = 0xff8a5a;
+  const glow = 0xc45a6a;
+  let x = Math.round(wave.radius);
+  let y = 0;
+  let err = 1 - x;
+  wave.graphics.fillStyle(glow, 0.35);
+  while (x >= y) {
+    plotWave(wave.graphics, wave.x, wave.y, x, y, 4);
+    y += 1;
+    if (err < 0) {
+      err += 2 * y + 1;
+    } else {
+      x -= 1;
+      err += 2 * (y - x) + 1;
+    }
+  }
+  x = Math.round(wave.radius);
+  y = 0;
+  err = 1 - x;
+  wave.graphics.fillStyle(band, 0.9);
+  while (x >= y) {
+    plotWave(wave.graphics, wave.x, wave.y, x, y, 2);
+    y += 1;
+    if (err < 0) {
+      err += 2 * y + 1;
+    } else {
+      x -= 1;
+      err += 2 * (y - x) + 1;
+    }
+  }
   if (wave.radius >= BossGateTuning.slamMaxRadius) {
     killShockwave(wave);
   }
@@ -75,4 +101,15 @@ export function shockwaveHits(wave: Shockwave, x: number, y: number): boolean {
 export function killShockwave(wave: Shockwave): void {
   wave.alive = false;
   wave.graphics.destroy();
+}
+
+function plotWave(g: Phaser.GameObjects.Graphics, cx: number, cy: number, x: number, y: number, size: number): void {
+  g.fillRect(cx + x, cy + y, size, size);
+  g.fillRect(cx - x, cy + y, size, size);
+  g.fillRect(cx + x, cy - y, size, size);
+  g.fillRect(cx - x, cy - y, size, size);
+  g.fillRect(cx + y, cy + x, size, size);
+  g.fillRect(cx - y, cy + x, size, size);
+  g.fillRect(cx + y, cy - x, size, size);
+  g.fillRect(cx - y, cy - x, size, size);
 }
