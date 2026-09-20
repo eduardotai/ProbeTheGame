@@ -29,13 +29,47 @@ type DebrisDebugSnapshot = DriftDebugSnapshot & {
   }>;
 };
 
+type GravityDebugSnapshot = {
+  runState: 'playing' | 'recovered' | 'lost';
+  hull: number;
+  hullMax: number;
+  fuel: number;
+  fuelCapacity: number;
+  elapsedMs: number;
+  pullAccel: number;
+  distToWell: number;
+  routeBand: 'horizon' | 'shortcut' | 'long';
+  probe: { x: number; y: number };
+  hunters: Array<{
+    x: number;
+    y: number;
+    seesTarget: boolean;
+    lastSeen: { x: number; y: number } | null;
+    kind: 'hunter';
+  }>;
+  bulwark: {
+    x: number;
+    y: number;
+    seesTarget: boolean;
+    lastSeen: { x: number; y: number } | null;
+    kind: 'bulwark';
+  };
+  pointBReached: boolean;
+};
+
 interface Window {
-  __bootPhase?: 'drift' | 'debris-field';
+  __bootPhase?: 'drift' | 'debris-field' | 'gravity-well';
   __drift?: {
     snapshot: () => DriftDebugSnapshot;
   };
   __debris?: {
     snapshot: () => DebrisDebugSnapshot;
+    placeProbe: (x: number, y: number) => void;
+    hitProbe: (amount?: number) => number;
+    restart: () => void;
+  };
+  __gravity?: {
+    snapshot: () => GravityDebugSnapshot;
     placeProbe: (x: number, y: number) => void;
     hitProbe: (amount?: number) => number;
     restart: () => void;

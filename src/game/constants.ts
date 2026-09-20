@@ -13,6 +13,11 @@ export const Palette = {
   coverEdge: 0x3a4d66,
   pocket: 0x0a1016,
   hull: 0xff6b6b,
+  wellRim: 0xc45a6a,
+  wellField: 0x5a2a44,
+  shortcut: 0xff8a5a,
+  longWay: 0x4a7a8a,
+  bulwark: 0xc45a6a,
 } as const;
 
 export const World = {
@@ -25,6 +30,7 @@ export const SceneKey = {
   Preload: 'Preload',
   Drift: 'Drift',
   DebrisField: 'DebrisField',
+  GravityWell: 'GravityWell',
   Test: 'Test',
 } as const;
 
@@ -32,6 +38,7 @@ export const TextureKey = {
   Probe: 'probe',
   Hunter: 'hunter',
   Ambusher: 'ambusher',
+  Bulwark: 'bulwark',
   PointB: 'point-b',
 } as const;
 

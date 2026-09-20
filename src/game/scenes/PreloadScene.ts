@@ -12,6 +12,7 @@ export class PreloadScene extends Phaser.Scene {
     this.generateProbeTexture();
     this.generateHunterTexture();
     this.generateAmbusherTexture();
+    this.generateBulwarkTexture();
     this.generatePointBTexture();
   }
 
@@ -45,6 +46,18 @@ export class PreloadScene extends Phaser.Scene {
     g.fillTriangle(18, 2, 2, 20, 34, 20);
     g.fillTriangle(18, 38, 2, 20, 34, 20);
     g.generateTexture(TextureKey.Ambusher, 36, 40);
+    g.destroy();
+  }
+
+  private generateBulwarkTexture(): void {
+    const g = this.make.graphics({}, false);
+    g.fillStyle(Palette.bulwark, 1);
+    g.fillRect(6, 12, 28, 22);
+    g.fillTriangle(20, 2, 4, 14, 36, 14);
+    g.fillTriangle(20, 42, 6, 32, 34, 32);
+    g.fillStyle(Palette.coverEdge, 1);
+    g.fillRect(14, 18, 12, 8);
+    g.generateTexture(TextureKey.Bulwark, 40, 44);
     g.destroy();
   }
 

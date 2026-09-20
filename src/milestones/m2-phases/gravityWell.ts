@@ -1,11 +1,12 @@
+import { SceneKey } from '../../game/constants';
 import type { PhaseModule } from './phaseRegistry';
 
-/** GDD §4.3 — constant pull; shortcut vs long way. */
+/** GDD §4.3 — constant pull; shortcut vs long way. Standalone-playable in M2.2. */
 export const gravityWellPhase: PhaseModule = {
   id: 'gravity-well',
   title: 'Gravity Well',
-  sceneKey: null,
+  sceneKey: SceneKey.GravityWell,
   bootStandalone: () => {
-    // TODO(M2.2): center-mass pull; risky shortcut vs safer long route.
+    // PreloadScene starts GravityWell when ?phase=gravity or ?phase=gravity-well.
   },
 };
