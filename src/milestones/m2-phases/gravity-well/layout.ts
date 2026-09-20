@@ -1,62 +1,21 @@
 import Phaser from 'phaser';
-import { Palette, TextureKey, World } from '../../../game/constants';
-import { createTiledCovers, paintPixelRing } from '../../../game/art';
+import { Palette, TextureKey } from '../../../game/constants';
+import { createTiledCovers, paintPixelRing, paintStarfield, placePointA } from '../../../game/art';
 import type { DriftCover } from '../../m1-drift';
 import { GravityTuning } from './tuning';
+import type { CoverSpec, GravityLayout } from './procSpine';
 
 export type GravityCover = DriftCover;
 
-type Aabb = { x: number; y: number; w: number; h: number };
+export function createGravityCovers(scene: Phaser.Scene, specs: readonly CoverSpec[]): GravityCover[] {
+  return createTiledCovers(scene, specs, 'debris');
+}
 
-/**
- * Gravity scars (GDD §4.3): sparse rock, not a debris field.
- * South belt closes a cheap bottom hug so the long way is the northern loop.
- * Shortcut is the A→B line that cuts north of the well (stronger pull).
- */
-const COVER_SPECS: readonly Aabb[] = [
-  // Spawn scar — breaks A→trench sightline so launch is not a free LOS gift
-  { x: 236, y: 358, w: 32, h: 100 },
-  { x: 340, y: 668, w: 200, h: 28 },
-  { x: 640, y: 690, w: 300, h: 24 },
-  { x: 940, y: 668, w: 200, h: 28 },
-  { x: 210, y: 560, w: 48, h: 72 },
-  { x: 1070, y: 560, w: 48, h: 72 },
-];
+export function paintGravityField(scene: Phaser.Scene, layout: GravityLayout): void {
+  paintStarfield(scene, layout.world.width, layout.world.height, Palette.wellRim, 210);
 
-const SHORTCUT_PATH: readonly { x: number; y: number }[] = [
-  { x: 200, y: 348 },
-  { x: 360, y: 338 },
-  { x: 520, y: 328 },
-  { x: 640, y: 324 },
-  { x: 760, y: 328 },
-  { x: 920, y: 338 },
-  { x: 1080, y: 348 },
-];
-
-const LONG_PATH: readonly { x: number; y: number }[] = [
-  { x: 180, y: 280 },
-  { x: 280, y: 150 },
-  { x: 430, y: 84 },
-  { x: 640, y: 68 },
-  { x: 850, y: 84 },
-  { x: 1000, y: 150 },
-  { x: 1100, y: 280 },
-];
-
-export const GRAVITY_SPAWN = {
-  probe: { x: 108, y: 348 },
-  pointB: { x: World.width - 108, y: 348 },
-  shortcutHunters: [
-    { x: 580, y: 268 },
-    { x: 920, y: 284 },
-  ],
-  longHunter: { x: 1020, y: 118 },
-  bulwark: { x: 670, y: 360 },
-} as const;
-
-export function paintGravityField(scene: Phaser.Scene): void {
   const g = scene.add.graphics().setDepth(1);
-  const { x, y } = GravityTuning.well;
+  const { x, y } = layout.well;
   const rings: ReadonlyArray<{ r: number; fill: number; line: number; fa: number; la: number }> = [
     { r: 360, fill: 0x243044, line: Palette.longWay, fa: 0.07, la: 0.35 },
     { r: 260, fill: 0x3a2444, line: Palette.wellField, fa: 0.09, la: 0.4 },
@@ -73,20 +32,20 @@ export function paintGravityField(scene: Phaser.Scene): void {
   paintPixelRing(g, x, y, GravityTuning.horizonRadius, Palette.hull, 0.7, false);
   scene.add.image(x, y, TextureKey.WellCore).setDepth(3);
 
-  paintPath(g, SHORTCUT_PATH, Palette.shortcut, 0.7);
-  paintPath(g, LONG_PATH, Palette.longWay, 0.65);
+  paintPath(g, layout.shortcutPath, Palette.shortcut, 0.7);
+  paintPath(g, layout.longPath, Palette.longWay, 0.65);
 
   const labelStyle = {
     fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
     fontSize: '12px',
   } as const;
   scene.add
-    .text(320, 300, 'SHORTCUT', { ...labelStyle, color: '#ff8a5a' })
+    .text(layout.probe.x + 220, 300, 'SHORTCUT', { ...labelStyle, color: '#ff8a5a' })
     .setOrigin(0.5, 0.5)
     .setDepth(6)
     .setAlpha(0.8);
   scene.add
-    .text(720, 58, 'LONG WAY', { ...labelStyle, color: '#6a9aac' })
+    .text(640, 150, 'LONG WAY', { ...labelStyle, color: '#6a9aac' })
     .setOrigin(0.5, 0.5)
     .setDepth(6)
     .setAlpha(0.8);
@@ -95,10 +54,13 @@ export function paintGravityField(scene: Phaser.Scene): void {
     .setOrigin(0.5, 0.5)
     .setDepth(6)
     .setAlpha(0.85);
-}
+  scene.add
+    .text(x, 118, 'LONG WAY', { ...labelStyle, color: '#6a9aac' })
+    .setOrigin(0.5, 0.5)
+    .setDepth(6)
+    .setAlpha(0.75);
 
-export function createGravityCovers(scene: Phaser.Scene): GravityCover[] {
-  return createTiledCovers(scene, COVER_SPECS, 'debris');
+  placePointA(scene, layout.probe.x, layout.probe.y);
 }
 
 function paintPath(

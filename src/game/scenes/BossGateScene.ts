@@ -81,6 +81,7 @@ export class BossGateScene extends Phaser.Scene {
   private hull!: Hull;
   private weapon!: SwarmWeapon;
   private hud!: Phaser.GameObjects.Text;
+  private destroyChip!: Phaser.GameObjects.Text;
   private banner!: Phaser.GameObjects.Text;
   private hint!: Phaser.GameObjects.Text;
   private facing = 0;
@@ -196,7 +197,7 @@ export class BossGateScene extends Phaser.Scene {
       .setScrollFactor(0)
       .setDepth(20);
 
-    this.add
+    this.destroyChip = this.add
       .text(World.width - 20, 16, 'DESTROY THE GUARD', {
         fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
         fontSize: '15px',
@@ -504,6 +505,7 @@ export class BossGateScene extends Phaser.Scene {
     this.pointB.unlock();
     this.sfx.gateOpen();
     this.tells.clear();
+    this.destroyChip.setVisible(false);
   }
 
   private completeIfPlaying(): void {

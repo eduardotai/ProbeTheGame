@@ -42,7 +42,7 @@ One probe, six phases, same run:
 
 Reaching **B** in phase N starts phase N+1 (brief `TRANSIT` beat, then the next scene). Boss Gate B is **MAP 1 — PROBE RECOVERED** (no meta spend screen). Hull 0 is **permadeath**: the entire run ends. **R** / Play Again launches a **new probe at Drift**.
 
-Optional `&seed=12345` still locks the Swarm / Anomaly / Boss Gate spines for the page.
+Optional `&seed=12345` locks the seeded spines (Drift / Debris / Gravity / Swarm / Anomaly / Boss Gate) for the page.
 
 ### Standalone phase boot (PRD §6)
 
@@ -50,9 +50,9 @@ Optional `&seed=12345` still locks the Swarm / Anomaly / Boss Gate spines for th
 
 | Phase | URL |
 |-------|-----|
-| Drift | `?phase=drift` |
-| Debris Field | `?phase=debris` or `?phase=debris-field` |
-| Gravity Well | `?phase=gravity` or `?phase=gravity-well` |
+| Drift | `?phase=drift` (optional `&seed=12345`) |
+| Debris Field | `?phase=debris` or `?phase=debris-field` (optional `&seed=12345`) |
+| Gravity Well | `?phase=gravity` or `?phase=gravity-well` (optional `&seed=12345`) |
 | Swarm | `?phase=swarm` (optional `&seed=12345`) |
 | Anomaly | `?phase=anomaly` (optional `&seed=12345`) |
 | Boss Gate | `?phase=boss` or `?phase=boss-gate` (optional `&seed=12345`) |
@@ -81,7 +81,7 @@ Keyboard only. No mouse aiming. End-card **click** is OK for next probe.
 | Move (facing follows thrust) | `WASD` or arrow keys |
 | Dodge (fuel + noise, brief i-frames) | `Shift` |
 | Fire (primary; facing from thrust, not pointer) | `Space` |
-| Next probe | `R` (or click the end card) |
+| Next probe | `R` (keyboard-only hint; click on the end card still works) |
 
 In the **chain**, R / Play Again after death or Map 1 clear (and mid-run abandon) launches a new probe at **Drift**. In **standalone**, R relaunches the current phase.
 
@@ -89,15 +89,17 @@ In the **chain**, R / Play Again after death or Map 1 clear (and mid-run abandon
 
 ### M1 Drift
 
-Launch at **A** (left). Cross open space to **B** (right). Hunters chase when they have **line of sight**. A few hard covers break vision. Dodging costs **fuel** and makes noise. Contact chips **hull**. Hull 0 ends the probe. Reaching B recovers it (chain: starts Debris Field). Fire is bound globally but this phase has nothing to shoot.
+Launch at **A** (left). Cross **open space** to **B** (right) on a long seeded transit (world **3600×720**, camera follows). Same `seed` → same covers and hunter homes. HUD shows SEED and TO B.
+
+Hunters chase when they have **line of sight**. A few hard covers break vision along the spine. Dodging costs **fuel** and makes noise. Contact chips **hull**. Hull 0 ends the probe. Reaching B recovers it (chain: starts Debris Field). Fire is bound globally but this phase has nothing to shoot.
 
 ### M2.1 Debris Field
 
-Cover slabs block vision **both ways** (hunters behind debris are hidden; they cannot see you through slabs either). Hunters **funnel the gaps** instead of walking through rock. Two L-shaped **safe pockets** (northwest / southwest) hide you but **pause fuel regen** and burn the clock. The straight line to B is the trap — an **Ambusher** lunges when you commit to the last corridor. Reach B or die.
+Long seeded cover maze (world **4200×720**, camera follows). Cover slabs block vision **both ways**. Hunters **funnel the gaps** instead of walking through rock. **Safe pockets** hide you but **pause fuel regen** and burn the clock. The last corridor is the trap — an **Ambusher** lunges when you commit. Reach B or die.
 
 ### M2.2 Gravity Well
 
-A center mass pulls **always**. The **shortcut** is the A→B line that cuts north of the well: shorter, stronger pull, denser threats (two hunters + a Gravity Bulwark that anchors near the well). The **long way** loops the north rim: weaker pull, one hunter, slower. Fall inside the horizon and hull hits 0. Reach B or die.
+Long seeded pull-transit (world **3800×720**, camera follows). A center mass sits **mid-run** and pulls **always** (ramps as you approach, eases after periapsis). The **shortcut** is the A→B trench that cuts north of the well: shorter, stronger pull, denser threats (hunters + a Gravity Bulwark that anchors near the well). The **long way** loops the north rim: weaker pull, fewer hunters, slower. Fall inside the horizon and hull hits 0. Reach B or die.
 
 ### M2.3 Swarm
 
@@ -157,7 +159,7 @@ M2 Phases 2–6 (one at a time, each standalone-bootable)  ← done
     swarm/            M2.3 playable — long A→B spine / Swarmlings / heat+ammo
     anomaly/          M2.4 playable — mirrored controls / Echo dim-tell / long spine
     boss-gate/        M2.5 playable — Gate Bulwark / destroy to open B / tells
-  src/game/proc/      shared seeded RNG + transit camera (Swarm / Anomaly / Boss Gate)
+  src/game/proc/      shared seeded RNG + transit camera (all six phases)
   src/game/art/       pixel atlas (on main; M3 does not rewrite it)
 
 M3 Full Map 1 loop  ← done
@@ -174,9 +176,7 @@ MVP **does not** include narrative logs, meta-upgrades at B, Map 2+, or music be
 
 ## TODOs after M3
 
-### Length pass (Drift / Debris / Gravity)
-
-Swarm, Anomaly, and Boss Gate are camera-follow transits (~3200–4600px). Drift, Debris Field, and Gravity Well are still single-screen 1280×720 rooms. A later pass should **elongate those three** into finite camera-follow A→B spines so Map 1 has VS-scale pressure the whole way, **without changing phase rules** (LOS + fuel; cover/funnels/pockets; pull + shortcut vs long way).
+Length pass for Drift / Debris / Gravity is in: all six Map 1 phases are camera-follow A→B transits (~3200–4600px). Not an endless VS arena.
 
 ## Stack
 

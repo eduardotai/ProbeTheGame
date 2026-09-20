@@ -1,6 +1,20 @@
-export { DebrisTuning } from './tuning';
-export { createDebrisCovers, isInSafePocket, DEBRIS_SPAWN, type DebrisCover } from './layout';
+export { DebrisSpine, DebrisTuning } from './tuning';
+export {
+  createDebrisCovers,
+  isInSafePocket,
+  paintDebrisField,
+  type DebrisCover,
+  type Aabb,
+} from './layout';
 export { NavGrid } from './navGrid';
+export {
+  generateDebrisLayout,
+  type CoverSpec,
+  type DebrisLayout,
+  type FunnelSpec,
+  type SegmentKind,
+  type SpineSegment,
+} from './procSpine';
 export {
   createFunnelHunter,
   updateFunnelHunter,

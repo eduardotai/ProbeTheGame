@@ -1,5 +1,4 @@
 import Phaser from 'phaser';
-import { World } from '../../../game/constants';
 import { DebrisTuning } from './tuning';
 
 export type Vec2 = { x: number; y: number };
@@ -17,12 +16,13 @@ export class NavGrid {
 
   constructor(
     occluders: readonly Phaser.Geom.Rectangle[],
+    world: { width: number; height: number } = DebrisTuning.world,
     cell = DebrisTuning.navCell,
     inflate = DebrisTuning.navInflate,
   ) {
     this.cell = cell;
-    this.cols = Math.ceil(World.width / cell);
-    this.rows = Math.ceil(World.height / cell);
+    this.cols = Math.ceil(world.width / cell);
+    this.rows = Math.ceil(world.height / cell);
     this.blocked = new Uint8Array(this.cols * this.rows);
 
     const inflated = occluders.map(

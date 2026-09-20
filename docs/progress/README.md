@@ -2,6 +2,30 @@
 
 Playtest stills and clips. Pixel-art atlas is on main (canvas, nearest-neighbor). M3 chain stills below were captured on greybox; they document **handoff / HUD / banners**, not the shipping art.
 
+## Length pass (Drift / Debris / Gravity)
+
+Seed `4242`. Early phases are now camera-follow A→B transits (not 1280×720 rooms). Viewport stays 1280×720.
+
+| File | What it shows |
+|------|----------------|
+| `length-drift-spawn.png` | Drift spawn — world **3600×720**, `TO B 3370`, SEED, launch window |
+| `length-drift-mid.png` | Mid-transit camera follow, `TO B 1810`, LOS lock |
+| `length-drift-approach.png` | East end — Point B in view, `TO B 570` |
+| `length-drift-recovered.png` | `POINT B — PROBE RECOVERED`, **Press R** hint |
+| `length-drift.mp4` | Drift A→B camera follow (~8s): `TO B 3370` → `192` |
+| `length-debris-spawn.png` | Debris spawn — world **4200×720**, `TO B 3985`, first funnel |
+| `length-debris-mid.png` | Mid-maze belts + funnel hunters, `TO B 2195` |
+| `length-debris-approach.png` | Last corridor, Ambusher, B in view |
+| `length-debris-recovered.png` | Debris recovered, **Press R** hint |
+| `length-gravity-spawn.png` | Gravity spawn — world **3800×720**, `TO B ~3570`, SHORTCUT / LONG WAY, weak pull |
+| `length-gravity-well.png` | Mid-transit well, Bulwark, `PULL FIRM`, `TO B 1860` |
+| `length-gravity-approach.png` | After periapsis, B in view, pull eases |
+| `length-gravity-recovered.png` | Gravity recovered, **Press R** hint |
+| `length-confirm-chain.png` | Default `/` still chains: `MAP 1 · 1/6 DRIFT` |
+| `length-confirm-swarm.png` | `?phase=swarm` unchanged (4600px) |
+| `length-boss-sealed.png` | `DESTROY THE GUARD` chip while sealed |
+| `length-boss-gate-open.png` | Guard down — chip **cleared**, HUD `GATE OPEN` |
+
 ## M3 Map 1 chain
 
 Default boot is the six-phase run (`/` or `?run=map1`). Carry lock: **partial refill** (hull +1 / fuel full / ammo 50% of missing). Boss Gate still requires **destroying the guard** to open B.

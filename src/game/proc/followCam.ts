@@ -13,7 +13,7 @@ export function setTransitBounds(scene: Phaser.Scene, world: TransitWorld): void
 
 /**
  * Camera for a long A→B transit: viewport stays 1280×720, world is wider.
- * Later phases can reuse this without rewriting Drift/Debris/Gravity.
+ * Shared by Drift, Debris, Gravity, Swarm, Anomaly, and Boss Gate.
  */
 export function bindTransitCamera(
   scene: Phaser.Scene,
