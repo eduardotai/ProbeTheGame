@@ -69,7 +69,7 @@ export function generateSwarmLayout(rng: Rng): SwarmLayout {
     } else if (segment.kind === 'mix') {
       addMix(rng, segment, swarmlings, zones, density);
     } else if (segment.kind === 'launch') {
-      addLaunchPack(rng, segment, swarmlings);
+      // Quiet runway — no pack on A.
     } else {
       addApproach(rng, segment, swarmlings, zones, density);
     }
@@ -90,7 +90,7 @@ export function generateSwarmLayout(rng: Rng): SwarmLayout {
     if (hitsCover(spec.x, spec.y, layout.covers, 22)) {
       continue;
     }
-    if (spec.x < 210 || spec.x > world.width - 160) {
+    if (spec.x < SwarmTuning.minHomeX || spec.x > world.width - 160) {
       continue;
     }
     layout.swarmlings.push(spec);
@@ -298,17 +298,6 @@ function addMix(
       y: rng.float(160, 560),
       kind: 'swarmling',
       homeRadius: 64,
-    });
-  }
-}
-
-function addLaunchPack(rng: Rng, segment: SpineSegment, swarmlings: SwarmlingSpec[]): void {
-  for (let i = 0; i < 2; i += 1) {
-    swarmlings.push({
-      x: rng.float(segment.x0 + 280, segment.x1 - 20),
-      y: 360 + rng.float(-80, 80),
-      kind: 'swarmling',
-      homeRadius: 40,
     });
   }
 }

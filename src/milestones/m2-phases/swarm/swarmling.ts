@@ -29,7 +29,7 @@ export function createSwarmling(
   sprite.setDrag(SwarmTuning.swarmlingDrag);
   sprite.setCollideWorldBounds(true);
   sprite.setDepth(8);
-  sprite.setBounce(0.4);
+  sprite.setBounce(0.18);
   const body = sprite.body as Phaser.Physics.Arcade.Body | null;
   if (kind === 'splitter') {
     sprite.setMaxVelocity(SwarmTuning.splitterMaxSpeed);
@@ -64,7 +64,7 @@ export function contactRadiusFor(kind: SwarmlingRole): number {
   return SwarmTuning.contactRadius;
 }
 
-export function updateSwarmling(ling: Swarmling, target: Vec2, now: number): void {
+export function updateSwarmling(ling: Swarmling, target: Vec2, now: number, aggroEnabled: boolean): void {
   if (!ling.alive) {
     return;
   }
@@ -80,7 +80,7 @@ export function updateSwarmling(ling: Swarmling, target: Vec2, now: number): voi
   }
 
   const dist = Phaser.Math.Distance.Between(sprite.x, sprite.y, target.x, target.y);
-  if (dist <= SwarmTuning.aggroRadius) {
+  if (aggroEnabled && dist <= SwarmTuning.aggroRadius) {
     const accel =
       ling.kind === 'splitter'
         ? SwarmTuning.splitterAccel

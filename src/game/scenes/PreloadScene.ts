@@ -87,10 +87,10 @@ export class PreloadScene extends Phaser.Scene {
   private generateBoltTexture(): void {
     const g = this.make.graphics({}, false);
     g.fillStyle(Palette.bolt, 1);
-    g.fillRect(2, 0, 4, 12);
-    g.fillStyle(Palette.sensorEye, 1);
-    g.fillRect(3, 0, 2, 4);
-    g.generateTexture(TextureKey.Bolt, 8, 12);
+    g.fillRect(3, 0, 8, 18);
+    g.fillStyle(0xffffff, 1);
+    g.fillRect(5, 0, 4, 7);
+    g.generateTexture(TextureKey.Bolt, 14, 18);
     g.destroy();
   }
 

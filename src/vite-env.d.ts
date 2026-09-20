@@ -75,6 +75,7 @@ type SwarmDebugSnapshot = {
   zone: 'clear' | 'push' | null;
   swarmlingAlive: number;
   swarmlingTotal: number;
+  nearestSwarmlingX: number | null;
   probe: { x: number; y: number };
   facing: number;
   pointBReached: boolean;

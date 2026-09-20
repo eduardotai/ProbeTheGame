@@ -231,8 +231,9 @@ export class SwarmScene extends Phaser.Scene {
     }
 
     const target = { x: this.probe.x, y: this.probe.y };
+    const aggroEnabled = time >= this.spawnProtectedUntil;
     for (const ling of this.swarmlings) {
-      updateSwarmling(ling, target, time);
+      updateSwarmling(ling, target, time, aggroEnabled);
     }
     this.cullBolts(time);
 
@@ -411,6 +412,7 @@ export class SwarmScene extends Phaser.Scene {
         zone: zoneAt(this.layout.zones, this.probe.x, this.probe.y)?.kind ?? null,
         swarmlingAlive: this.swarmlings.filter((ling) => ling.alive).length,
         swarmlingTotal: this.swarmlings.length,
+        nearestSwarmlingX: nearestX(this.swarmlings),
         probe: { x: this.probe.x, y: this.probe.y },
         facing: this.facing,
         pointBReached: this.pointB.reached,
@@ -445,4 +447,17 @@ function formatClock(ms: number): string {
   const m = Math.floor(total / 60);
   const s = total % 60;
   return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+function nearestX(lings: readonly Swarmling[]): number | null {
+  let min: number | null = null;
+  for (const ling of lings) {
+    if (!ling.alive) {
+      continue;
+    }
+    if (min === null || ling.sprite.x < min) {
+      min = ling.sprite.x;
+    }
+  }
+  return min === null ? null : Number(min.toFixed(1));
 }

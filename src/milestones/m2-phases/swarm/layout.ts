@@ -33,6 +33,9 @@ export function paintSwarmField(scene: Phaser.Scene, layout: SwarmLayout): void 
 
   g.fillStyle(Palette.pointB, 0.55);
   for (const segment of layout.segments) {
+    if (segment.kind === 'launch') {
+      continue;
+    }
     g.fillRect(segment.x0 + 8, segment.laneY - 2, Math.max(4, segment.x1 - segment.x0 - 16), 4);
   }
 

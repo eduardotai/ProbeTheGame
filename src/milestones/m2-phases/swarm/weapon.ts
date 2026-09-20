@@ -133,7 +133,7 @@ export function spawnBolt(
   bolt.setCollideWorldBounds(false);
   const body = bolt.body as Phaser.Physics.Arcade.Body | null;
   body?.setAllowGravity(false);
-  body?.setSize(6, 10, true);
+  body?.setSize(8, 14, true);
   bolt.setData('born', now);
   return bolt;
 }
