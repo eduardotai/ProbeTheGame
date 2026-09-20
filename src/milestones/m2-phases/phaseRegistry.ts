@@ -1,3 +1,4 @@
+import { SceneKey } from '../../game/constants';
 import { driftPhaseStub } from '../m1-drift';
 import { anomalyPhase } from './anomaly';
 import { bossGatePhase } from './bossGate';
@@ -20,6 +21,8 @@ export type PhaseId =
 export type PhaseModule = {
   id: PhaseId;
   title: string;
+  /** Phaser scene key when the phase is standalone-playable; null = stub. */
+  sceneKey: string | null;
   /** PRD §6: each M2 phase must boot standalone for test/debug. */
   bootStandalone: () => void;
 };
@@ -36,8 +39,9 @@ export const MAP1_PHASE_ORDER: readonly PhaseId[] = [
 const driftPhase: PhaseModule = {
   id: driftPhaseStub.id,
   title: driftPhaseStub.title,
+  sceneKey: SceneKey.Drift,
   bootStandalone: () => {
-    // Drift is the default play scene (M1). App entry boots DriftScene.
+    // Default boot, or `?phase=drift`. PreloadScene starts DriftScene.
   },
 };
 

@@ -7,6 +7,7 @@ import type { PhaseModule } from './phaseRegistry';
 export const bossGatePhase: PhaseModule = {
   id: 'boss-gate',
   title: 'Boss Gate',
+  sceneKey: null,
   bootStandalone: () => {
     // TODO(M2): heavy guard; destroy (default) or bypass per later lock; opens Point B.
   },

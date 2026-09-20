@@ -16,8 +16,25 @@ type DriftDebugSnapshot = {
   pointBReached: boolean;
 };
 
+type DebrisDebugSnapshot = DriftDebugSnapshot & {
+  elapsedMs: number;
+  inPocket: boolean;
+  hunters: Array<{
+    x: number;
+    y: number;
+    seesTarget: boolean;
+    lastSeen: { x: number; y: number } | null;
+    visibleToProbe: boolean;
+    kind: 'funnel' | 'ambusher';
+  }>;
+};
+
 interface Window {
+  __bootPhase?: 'drift' | 'debris-field';
   __drift?: {
     snapshot: () => DriftDebugSnapshot;
+  };
+  __debris?: {
+    snapshot: () => DebrisDebugSnapshot;
   };
 }

@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { resolvePlayableSceneKey } from '../bootPhase';
 import { Palette, SceneKey, TextureKey } from '../constants';
 
 /** Generates greybox silhouettes. No shipped art pack (GDD §9 MVP). */
@@ -10,11 +11,12 @@ export class PreloadScene extends Phaser.Scene {
   preload(): void {
     this.generateProbeTexture();
     this.generateHunterTexture();
+    this.generateAmbusherTexture();
     this.generatePointBTexture();
   }
 
   create(): void {
-    this.scene.start(SceneKey.Drift);
+    this.scene.start(resolvePlayableSceneKey());
   }
 
   private generateProbeTexture(): void {
@@ -34,6 +36,15 @@ export class PreloadScene extends Phaser.Scene {
     g.fillStyle(Palette.hunter, 1);
     g.fillTriangle(18, 36, 2, 4, 34, 4);
     g.generateTexture(TextureKey.Hunter, 36, 40);
+    g.destroy();
+  }
+
+  private generateAmbusherTexture(): void {
+    const g = this.make.graphics({}, false);
+    g.fillStyle(Palette.ambusher, 1);
+    g.fillTriangle(18, 2, 2, 20, 34, 20);
+    g.fillTriangle(18, 38, 2, 20, 34, 20);
+    g.generateTexture(TextureKey.Ambusher, 36, 40);
     g.destroy();
   }
 

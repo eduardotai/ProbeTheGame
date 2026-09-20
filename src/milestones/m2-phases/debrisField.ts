@@ -1,10 +1,12 @@
+import { SceneKey } from '../../game/constants';
 import type { PhaseModule } from './phaseRegistry';
 
 /** GDD §4.2 — cover, funnel gaps. Standalone-playable in M2 before Gravity Well. */
 export const debrisFieldPhase: PhaseModule = {
   id: 'debris-field',
   title: 'Debris Field',
+  sceneKey: SceneKey.DebrisField,
   bootStandalone: () => {
-    // TODO(M2): cover occludes LOS for probe and hunters; enemies funnel gaps.
+    // PreloadScene starts DebrisField when ?phase=debris or ?phase=debris-field.
   },
 };

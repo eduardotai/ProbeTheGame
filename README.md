@@ -4,7 +4,7 @@ Sci-fi roguelike set in **Thursday Arena** (Grokbot Galaxy). You are not a hero 
 
 > You are not a hero. You are a probe. You do not return.
 
-**Current playable gate: Milestone 1 — Drift.** Phaser 3 + TypeScript + Vite. Greybox silhouettes. Keyboard-only.
+**Current playable gate: Milestone 2.1 — Debris Field** (M1 Drift still boots by default). Phaser 3 + TypeScript + Vite. Greybox silhouettes. Keyboard-only.
 
 Design source of truth (do not contradict):
 
@@ -22,16 +22,25 @@ npm install
 npm run dev
 ```
 
-Open the Vite URL (default `http://localhost:5173`). Boot → Preload → **Drift**.
+Open the Vite URL (default `http://localhost:5173`). Boot → Preload → **Drift** (default).
 
 ```bash
 npm run build    # tsc --noEmit && vite build
 npm run preview  # serve the production bundle
 ```
 
-## How to play (M1 Drift)
+### Standalone phase boot (PRD §6)
 
-Launch at **A** (left). Cross open space to **B** (right). Hunters chase when they have **line of sight**. A few hard covers break vision. Dodging costs **fuel** and makes noise (nearby hunters get a last-seen ping even through cover). Contact chips **hull**. Hull 0 ends the probe. Reaching B recovers it.
+| Phase | URL |
+|-------|-----|
+| Drift (default) | `/` or `?phase=drift` |
+| Debris Field | `?phase=debris` or `?phase=debris-field` |
+
+Other Map 1 ids resolve in the phase registry but are still stubs (they fall back to Drift).
+
+## How to play
+
+Keyboard only. No mouse aiming. Fire is not bound yet. End-card **click** is OK for next probe.
 
 | Action | Keys |
 |--------|------|
@@ -39,14 +48,20 @@ Launch at **A** (left). Cross open space to **B** (right). Hunters chase when th
 | Dodge (fuel + noise, brief i-frames) | `Shift` |
 | Next probe (after win or death, or mid-run) | `R` (or click the end card) |
 
-No mouse aiming. Fire is not bound yet (out of scope for M1).
+### M1 Drift
+
+Launch at **A** (left). Cross open space to **B** (right). Hunters chase when they have **line of sight**. A few hard covers break vision. Dodging costs **fuel** and makes noise. Contact chips **hull**. Hull 0 ends the probe. Reaching B recovers it.
+
+### M2.1 Debris Field
+
+Cover slabs block vision **both ways** (hunters behind debris are hidden; they cannot see you through slabs either). Hunters **funnel the gaps** instead of walking through rock. Two L-shaped **safe pockets** (northwest / southwest) hide you but **pause fuel regen** and burn the clock. The straight line to B is the trap — an **Ambusher** lunges when you commit to the last corridor. Reach B or die; **R** relaunches this phase (standalone).
 
 ## Milestone map
 
 Gated by the PRD. **Do not start the next milestone until the previous gate is playable.**
 
 ```
-M1 Drift (validation gate)  ← current
+M1 Drift (validation gate)  ← done
   src/milestones/m1-drift/
     probe.ts          avatar
     movement.ts       inertia + keyboard facing + dodge
@@ -60,11 +75,12 @@ M1 Drift (validation gate)  ← current
 M2 Phases 2–6 (one at a time, each standalone-bootable)
   src/milestones/m2-phases/
     phaseRegistry.ts  Map 1 order + registry
-    debrisField.ts    cover / funnel gaps
-    gravityWell.ts    pull + shortcut vs long way
-    swarm.ts          Swarmlings / ammo-heat
-    anomaly.ts        one invert-rules phase per run
-    bossGate.ts       Bulwark guard; default destroy to open B
+    debris-field/     M2.1 playable — cover / funnel gaps / pockets
+    debrisField.ts    registry entry (sceneKey DebrisField)
+    gravityWell.ts    stub — pull + shortcut vs long way
+    swarm.ts          stub — Swarmlings / ammo-heat
+    anomaly.ts        stub — one invert-rules phase per run
+    bossGate.ts       stub — Bulwark guard; default destroy to open B
 
 M3 Full Map 1 loop
   src/milestones/m3-map1/
