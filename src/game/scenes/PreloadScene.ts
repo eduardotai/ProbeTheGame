@@ -16,6 +16,8 @@ export class PreloadScene extends Phaser.Scene {
     this.generateSwarmlingTexture();
     this.generateSplitterTexture();
     this.generateBoltTexture();
+    this.generateAnomalyHunterTexture();
+    this.generateAnomalyEchoTexture();
     this.generatePointBTexture();
   }
 
@@ -91,6 +93,25 @@ export class PreloadScene extends Phaser.Scene {
     g.fillStyle(0xffffff, 1);
     g.fillRect(5, 0, 4, 7);
     g.generateTexture(TextureKey.Bolt, 14, 18);
+    g.destroy();
+  }
+
+  private generateAnomalyHunterTexture(): void {
+    const g = this.make.graphics({}, false);
+    g.fillStyle(Palette.anomaly, 1);
+    g.fillTriangle(2, 18, 30, 4, 30, 32);
+    g.fillStyle(Palette.void, 1);
+    g.fillCircle(22, 18, 4);
+    g.generateTexture(TextureKey.AnomalyHunter, 32, 36);
+    g.destroy();
+  }
+
+  private generateAnomalyEchoTexture(): void {
+    const g = this.make.graphics({}, false);
+    g.fillStyle(Palette.anomalyEcho, 1);
+    g.fillTriangle(12, 2, 2, 22, 22, 22);
+    g.fillTriangle(12, 22, 4, 14, 20, 14);
+    g.generateTexture(TextureKey.AnomalyEcho, 24, 24);
     g.destroy();
   }
 

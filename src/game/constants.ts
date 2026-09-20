@@ -21,6 +21,9 @@ export const Palette = {
   swarmling: 0xffc14a,
   splitter: 0xff8a3a,
   bolt: 0x7cffd4,
+  anomaly: 0xc46cff,
+  anomalyDim: 0x6a3a88,
+  anomalyEcho: 0xe07aff,
 } as const;
 
 export const World = {
@@ -35,6 +38,7 @@ export const SceneKey = {
   DebrisField: 'DebrisField',
   GravityWell: 'GravityWell',
   Swarm: 'Swarm',
+  Anomaly: 'Anomaly',
   Test: 'Test',
 } as const;
 
@@ -46,6 +50,8 @@ export const TextureKey = {
   Swarmling: 'swarmling',
   Splitter: 'splitter',
   Bolt: 'bolt',
+  AnomalyHunter: 'anomaly-hunter',
+  AnomalyEcho: 'anomaly-echo',
   PointB: 'point-b',
 } as const;
 

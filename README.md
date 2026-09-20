@@ -4,7 +4,7 @@ Sci-fi roguelike set in **Thursday Arena** (Grokbot Galaxy). You are not a hero 
 
 > You are not a hero. You are a probe. You do not return.
 
-**Current playable gate: Milestone 2.3 — Swarm** (M1 Drift still boots by default). Phaser 3 + TypeScript + Vite. Greybox silhouettes. Keyboard-only.
+**Current playable gate: Milestone 2.4 — Anomaly** (M1 Drift still boots by default). Phaser 3 + TypeScript + Vite. Greybox silhouettes. Keyboard-only.
 
 Design source of truth (do not contradict):
 
@@ -37,8 +37,9 @@ npm run preview  # serve the production bundle
 | Debris Field | `?phase=debris` or `?phase=debris-field` |
 | Gravity Well | `?phase=gravity` or `?phase=gravity-well` |
 | Swarm | `?phase=swarm` (optional `&seed=12345` locks the spine) |
+| Anomaly | `?phase=anomaly` (optional `&seed=7777` locks the spine) |
 
-Other Map 1 ids resolve in the phase registry but are still stubs (they fall back to Drift).
+Other Map 1 ids resolve in the phase registry but are still stubs (they fall back to Drift). Boss Gate remains stubbed.
 
 ## How to play
 
@@ -73,6 +74,14 @@ Dozens of small **Swarmlings** pressure the whole run (denser near B). They **fl
 
 Choice: **CLEAR** a pocket (spend ammo/heat, quieter lane) vs **PUSH** through contact damage toward B. Reach B or die; **R** relaunches Swarm (same seed for this page load unless you passed `?seed=`).
 
+### M2.4 Anomaly
+
+A **long horizontal transit** (world **4800px**, camera follows). Seeded procedural spine: same `seed` → same covers and hunter homes. HUD and the console show the seed.
+
+**Invert (this phase only):** controls mirrored — WASD / arrow **axes flip** (`W↓ A→ S↑ D←`). Instinct `D` toward B sends you **west**. Facing, dodge, and Space fire follow inverted thrust. Other phases keep normal controls. No music bed (MVP: one-shot SFX only).
+
+Hunters **flash then lunge** (echo variant uses a cool inverted tell). Heat + ammo gate spray. Reach B or die; **R** relaunches Anomaly (same seed for this page load unless you passed `?seed=`).
+
 ## Milestone map
 
 Gated by the PRD. **Do not start the next milestone until the previous gate is playable.**
@@ -98,9 +107,10 @@ M2 Phases 2–6 (one at a time, each standalone-bootable)
     gravityWell.ts    registry entry (sceneKey GravityWell)
     swarm/            M2.3 playable — long A→B spine / Swarmlings / heat+ammo
     swarm.ts          registry entry (sceneKey Swarm)
-    anomaly.ts        stub — one invert-rules phase per run
+    anomaly/          M2.4 playable — long A→B / one invert (controls mirrored)
+    anomaly.ts        registry entry (sceneKey Anomaly)
     bossGate.ts       stub — Bulwark guard; default destroy to open B
-  src/game/proc/      shared seeded RNG + transit camera (Swarm uses it now)
+  src/game/proc/      shared seeded RNG + transit camera (Swarm / Anomaly)
 
 M3 Full Map 1 loop
   src/milestones/m3-map1/

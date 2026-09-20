@@ -1,15 +1,12 @@
+import { SceneKey } from '../../game/constants';
 import type { PhaseModule } from './phaseRegistry';
 
-/**
- * GDD §4.5 — exactly one Anomaly per Map 1 run.
- * Default placement: after Swarm, before Boss Gate.
- * Rules invert for this phase only. No music bed in MVP.
- */
+/** GDD §4.5 — one invert (controls mirrored) for this phase only. Standalone-playable in M2.4. */
 export const anomalyPhase: PhaseModule = {
   id: 'anomaly',
   title: 'Anomaly',
-  sceneKey: null,
+  sceneKey: SceneKey.Anomaly,
   bootStandalone: () => {
-    // TODO(M2): pick one invert rule (mirrored controls / heal hurts / silence attracts / dark exit).
+    // PreloadScene starts Anomaly when ?phase=anomaly.
   },
 };

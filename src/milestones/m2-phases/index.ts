@@ -9,4 +9,5 @@ export { debrisFieldPhase } from './debrisField';
 export { gravityWellPhase } from './gravityWell';
 export { swarmPhase } from './swarm';
 export { anomalyPhase } from './anomaly';
+export { AnomalyInvert } from './anomaly/tuning';
 export { bossGatePhase } from './bossGate';

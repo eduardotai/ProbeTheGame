@@ -83,8 +83,37 @@ type SwarmDebugSnapshot = {
   zones: Array<{ kind: 'clear' | 'push'; x: number; y: number; w: number; h: number }>;
 };
 
+type AnomalyDebugSnapshot = {
+  runState: 'playing' | 'recovered' | 'lost';
+  seed: number;
+  seedHex: string;
+  invert: 'controls-mirrored';
+  invertLabel: string;
+  inputCaption: string | null;
+  world: { width: number; height: number };
+  hull: number;
+  hullMax: number;
+  fuel: number;
+  fuelCapacity: number;
+  ammo: number;
+  ammoCapacity: number;
+  heat: number;
+  overheated: boolean;
+  elapsedMs: number;
+  toB: number;
+  zone: 'launch' | 'pack' | 'approach' | null;
+  hunterAlive: number;
+  hunterTotal: number;
+  nearestHunterX: number | null;
+  probe: { x: number; y: number };
+  facing: number;
+  pointBReached: boolean;
+  pointB: { x: number; y: number };
+  zones: Array<{ kind: 'launch' | 'pack' | 'approach'; x: number; y: number; w: number; h: number }>;
+};
+
 interface Window {
-  __bootPhase?: 'drift' | 'debris-field' | 'gravity-well' | 'swarm';
+  __bootPhase?: 'drift' | 'debris-field' | 'gravity-well' | 'swarm' | 'anomaly';
   __probeTransitSeed?: number;
   __drift?: {
     snapshot: () => DriftDebugSnapshot;
@@ -103,6 +132,12 @@ interface Window {
   };
   __swarm?: {
     snapshot: () => SwarmDebugSnapshot;
+    placeProbe: (x: number, y: number) => void;
+    hitProbe: (amount?: number) => number;
+    restart: () => void;
+  };
+  __anomaly?: {
+    snapshot: () => AnomalyDebugSnapshot;
     placeProbe: (x: number, y: number) => void;
     hitProbe: (amount?: number) => number;
     restart: () => void;
