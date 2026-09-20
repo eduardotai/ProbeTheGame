@@ -163,7 +163,7 @@ export class AnomalyScene extends Phaser.Scene {
 
     const midX = World.width / 2;
     this.invertBadge = this.add
-      .text(midX, 108, `INVERT ACTIVE  ·  ${AnomalyInvert.label}  ·  ${AnomalyInvert.hint}`, {
+      .text(midX, 132, `INVERT ACTIVE  ·  ${AnomalyInvert.label}  ·  ${AnomalyInvert.hint}`, {
         fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
         fontSize: '15px',
         color: '#e07aff',
@@ -362,6 +362,7 @@ export class AnomalyScene extends Phaser.Scene {
     this.pointB.onReached();
     this.runState = 'recovered';
     this.freezeField();
+    this.invertBadge.setVisible(false);
     this.sfx.recovered();
     this.banner.setColor('#5ee0ff');
     this.banner.setText('POINT B — PROBE RECOVERED');
@@ -375,6 +376,7 @@ export class AnomalyScene extends Phaser.Scene {
     onHullDepleted();
     this.runState = 'lost';
     this.freezeField();
+    this.invertBadge.setVisible(false);
     this.sfx.death();
     this.probe.setTint(0x664444);
     this.banner.setColor('#ff6b6b');

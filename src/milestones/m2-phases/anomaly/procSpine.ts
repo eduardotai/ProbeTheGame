@@ -58,8 +58,6 @@ export function generateAnomalyLayout(rng: Rng): AnomalyLayout {
   const hunters: HunterSpec[] = [];
   const zones: TransitZone[] = [];
 
-  addSpawnOccluder(covers);
-
   for (const segment of segments) {
     const density = densityAt(segment.x0, world.width);
     addLaneCovers(rng, segment, covers);
@@ -182,10 +180,6 @@ function pickBodyKinds(rng: Rng, n: number): SegmentKind[] {
 function densityAt(x: number, worldWidth: number): number {
   const t = clamp(x / Math.max(1, worldWidth), 0, 1);
   return 0.88 + t * 0.9;
-}
-
-function addSpawnOccluder(covers: CoverSpec[]): void {
-  covers.push({ x: 248, y: 360, w: 26, h: 104 });
 }
 
 function addLaneCovers(rng: Rng, segment: SpineSegment, covers: CoverSpec[]): void {

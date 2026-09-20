@@ -55,7 +55,7 @@ export function paintAnomalyField(scene: Phaser.Scene, layout: AnomalyLayout): v
     .setDepth(6);
 
   scene.add
-    .text(layout.probe.x + 210, 188, `INVERT  ${AnomalyInvert.label}`, {
+    .text(200, 188, `INVERT  ${AnomalyInvert.label}`, {
       fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
       fontSize: '16px',
       color: '#e07aff',
@@ -66,7 +66,7 @@ export function paintAnomalyField(scene: Phaser.Scene, layout: AnomalyLayout): v
     .setDepth(6);
 
   scene.add
-    .text(layout.probe.x + 210, 228, AnomalyInvert.hint, {
+    .text(200, 228, AnomalyInvert.hint, {
       fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
       fontSize: '14px',
       color: '#c46cff',
@@ -77,7 +77,7 @@ export function paintAnomalyField(scene: Phaser.Scene, layout: AnomalyLayout): v
     .setDepth(6);
 
   scene.add
-    .text(layout.probe.x + 210, 268, 'A / ←  TOWARD B', {
+    .text(200, 268, 'A / ←  TOWARD B', {
       fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
       fontSize: '13px',
       color: '#8aa0b4',
