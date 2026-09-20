@@ -44,11 +44,11 @@ export const GRAVITY_SPAWN = {
   probe: { x: 108, y: 348 },
   pointB: { x: World.width - 108, y: 348 },
   shortcutHunters: [
-    { x: 468, y: 292 },
-    { x: 872, y: 300 },
+    { x: 490, y: 286 },
+    { x: 860, y: 292 },
   ],
   longHunter: { x: 640, y: 96 },
-  bulwark: { x: 668, y: 352 },
+  bulwark: { x: 670, y: 360 },
 } as const;
 
 export function paintGravityField(scene: Phaser.Scene): void {

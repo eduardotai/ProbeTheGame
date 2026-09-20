@@ -2,15 +2,15 @@ import { World } from '../../../game/constants';
 
 /** Gravity Well numbers (GDD §4.3). Distinct from Drift/Debris — do not retune them. */
 export const GravityTuning = {
-  well: { x: World.width / 2, y: 518 },
+  well: { x: World.width / 2, y: 540 },
   /** Instant hull 0 if the probe crosses this radius. */
   horizonRadius: 80,
   /** Visual mass + hunter keep-out. Probe can still fall through. */
   massRadius: 96,
   /** Distances at or inside this count as the shortcut (stronger pull). */
-  shortcutRadius: 214,
+  shortcutRadius: 220,
   /** Inverse-linear pull: accel = pullG / max(dist, pullMinR). */
-  pullG: 78_000,
+  pullG: 66_000,
   pullMinR: 88,
   /** Extra max-speed while fighting a strong pull, capped. */
   pullSpeedGain: 0.18,

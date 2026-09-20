@@ -26,6 +26,14 @@ export function routeBand(pos: Vec2): RouteBand {
   if (dist <= GravityTuning.shortcutRadius) {
     return 'shortcut';
   }
+  // Northern loop is the long way even while still far from the mass.
+  if (pos.y <= 210) {
+    return 'long';
+  }
+  // A→B trench that cuts north of the well.
+  if (pos.y >= 240 && pos.y <= 430) {
+    return 'shortcut';
+  }
   return 'long';
 }
 
