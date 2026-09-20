@@ -49,7 +49,7 @@ export const GRAVITY_SPAWN = {
     { x: 580, y: 268 },
     { x: 920, y: 284 },
   ],
-  longHunter: { x: 640, y: 96 },
+  longHunter: { x: 1020, y: 118 },
   bulwark: { x: 670, y: 360 },
 } as const;
 
