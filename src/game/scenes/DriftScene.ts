@@ -24,7 +24,16 @@ import {
   type NoisePulse,
   type PointBTrigger,
 } from '../../milestones/m1-drift';
-import { isRunOver, onHullDepleted, requestNextProbe } from '../../milestones/m3-map1';
+import {
+  createPhaseEquipment,
+  exposeMap1Window,
+  formatPhaseHudLine,
+  isRunOver,
+  requestNextProbe,
+  resetViewportCamera,
+  resolvePhaseClear,
+  resolvePhaseLost,
+} from '../../milestones/m3-map1';
 
 type RunState = 'playing' | 'recovered' | 'lost';
 
@@ -64,11 +73,13 @@ export class DriftScene extends Phaser.Scene {
     this.sfx = new Sfx();
 
     this.cameras.main.setBackgroundColor(Palette.void);
+    resetViewportCamera(this, World.width, World.height);
     this.physics.world.setBounds(0, 0, World.width, World.height);
     paintStarfield(this, World.width, World.height, Palette.pointB);
 
-    this.fuel = new FuelTank();
-    this.hull = new Hull();
+    const kit = createPhaseEquipment('drift');
+    this.fuel = kit.fuel;
+    this.hull = kit.hull;
     this.covers = createDriftCovers(this);
 
     this.probe = createProbe(this, 140, World.height / 2);
@@ -244,25 +255,16 @@ export class DriftScene extends Phaser.Scene {
     this.runState = 'recovered';
     this.freezeField();
     this.sfx.recovered();
-    this.banner.setColor('#5ee0ff');
-    this.banner.setText('POINT B — PROBE RECOVERED');
-    this.banner.setVisible(true);
-    this.hint.setText('Press R or click — launch next probe');
-    this.hint.setVisible(true);
+    resolvePhaseClear(this, 'drift', { hull: this.hull, fuel: this.fuel }, { banner: this.banner, hint: this.hint });
     this.hud.setText(this.buildHud());
   }
 
   private loseRun(): void {
-    onHullDepleted();
     this.runState = 'lost';
     this.freezeField();
     this.sfx.death();
     this.probe.setTint(0x664444);
-    this.banner.setColor('#ff6b6b');
-    this.banner.setText('HULL 0 — PROBE LOST');
-    this.banner.setVisible(true);
-    this.hint.setText('Press R or click — launch next probe');
-    this.hint.setVisible(true);
+    resolvePhaseLost({ banner: this.banner, hint: this.hint });
     this.hud.setText(this.buildHud());
   }
 
@@ -293,7 +295,7 @@ export class DriftScene extends Phaser.Scene {
     const protectedNote =
       this.runState === 'playing' && this.time.now < this.spawnProtectedUntil ? '  LAUNCH WINDOW' : '';
     return [
-      `DRIFT  ·  M1${protectedNote}`,
+      formatPhaseHudLine('drift', 'DRIFT  ·  M1', protectedNote),
       `HULL ${this.hull.current}/${this.hull.max} ${this.hull.toBar()}    FUEL ${Math.floor(this.fuel.current)}/${this.fuel.capacity} ${this.fuel.toBar()}`,
       `HUNTER ${hunterState}`,
       'WASD/arrows move   Shift dodge   R next probe   keyboard only',
@@ -317,9 +319,30 @@ export class DriftScene extends Phaser.Scene {
         })),
         pointBReached: this.pointB.reached,
       }),
+      placeProbe: (x: number, y: number) => {
+        this.probe.setPosition(x, y);
+        const body = this.probe.body as Phaser.Physics.Arcade.Body | null;
+        body?.reset(x, y);
+      },
+      hitProbe: (amount = 1) => {
+        if (this.runState !== 'playing') {
+          return this.hull.current;
+        }
+        this.hull.applyHit(amount);
+        if (isRunOver(this.hull.current)) {
+          this.loseRun();
+        }
+        return this.hull.current;
+      },
+      completePhase: () => {
+        this.completeIfPlaying();
+      },
+      restart: () => {
+        requestNextProbe(this);
+      },
     };
     (window as Window).__drift = debug;
-    (window as Window).__bootPhase = 'drift';
+    exposeMap1Window('drift');
   }
 
 }

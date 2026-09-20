@@ -1,8 +1,12 @@
 # Progress media
 
-Pixel-art pass (after M2.5 Boss Gate). Canvas atlas, nearest-neighbor. Seed `4242` where the spine is seeded.
+Playtest stills and clips. Pixel-art atlas is on main (canvas, nearest-neighbor). M3 chain stills below were captured on greybox; they document **handoff / HUD / banners**, not the shipping art.
 
-Greybox rectangles are gone for probe, named enemies, cover/pillars/debris, Point A/B, and the Boss Gate wall. Combat numbers unchanged.
+## M3 Map 1 chain
+
+Default boot is the six-phase run. Carry lock: **partial refill** (hull +1 / fuel full / ammo 50% of missing). Boss Gate still requires destroying the guard to open B.
+
+Stills and the transition clip land in this folder as `m3-*` once playtest capture runs.
 
 ## Pixel-art pass
 
@@ -24,6 +28,10 @@ Greybox rectangles are gone for probe, named enemies, cover/pillars/debris, Poin
 | `pixel-phase-compare.mp4` | `?phase=` boots: Drift → Debris → Gravity → Swarm → Anomaly → Boss |
 
 ## Earlier phases (already on main)
+
+### M2.5 Boss Gate
+
+Seed `4242` (`?phase=boss&seed=4242`). Win: **destroy the Gate Bulwark to open B**.
 
 | File | What it shows |
 |------|----------------|

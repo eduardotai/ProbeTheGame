@@ -14,7 +14,15 @@ import {
   tryDodge,
   type PointBTrigger,
 } from '../../milestones/m1-drift';
-import { isRunOver, onHullDepleted, requestNextProbe } from '../../milestones/m3-map1';
+import {
+  createPhaseEquipment,
+  exposeMap1Window,
+  formatPhaseHudLine,
+  isRunOver,
+  requestNextProbe,
+  resolvePhaseClear,
+  resolvePhaseLost,
+} from '../../milestones/m3-map1';
 import {
   boltExpired,
   contactRadiusFor,
@@ -84,9 +92,10 @@ export class SwarmScene extends Phaser.Scene {
     this.dodgeUntil = 0;
     this.swarmlings = [];
     this.sfx = new Sfx();
-    this.weapon = new SwarmWeapon();
-    this.fuel = new FuelTank();
-    this.hull = new Hull();
+    const kit = createPhaseEquipment('swarm');
+    this.weapon = kit.weapon;
+    this.fuel = kit.fuel;
+    this.hull = kit.hull;
 
     this.cameras.main.setBackgroundColor(Palette.void);
     setTransitBounds(this, this.layout.world);
@@ -352,25 +361,21 @@ export class SwarmScene extends Phaser.Scene {
     this.runState = 'recovered';
     this.freezeField();
     this.sfx.recovered();
-    this.banner.setColor('#5ee0ff');
-    this.banner.setText('POINT B — PROBE RECOVERED');
-    this.banner.setVisible(true);
-    this.hint.setText('Press R or click — launch next probe');
-    this.hint.setVisible(true);
+    resolvePhaseClear(
+      this,
+      'swarm',
+      { hull: this.hull, fuel: this.fuel, weapon: this.weapon },
+      { banner: this.banner, hint: this.hint },
+    );
     this.hud.setText(this.buildHud());
   }
 
   private loseRun(): void {
-    onHullDepleted();
     this.runState = 'lost';
     this.freezeField();
     this.sfx.death();
     this.probe.setTint(0x664444);
-    this.banner.setColor('#ff6b6b');
-    this.banner.setText('HULL 0 — PROBE LOST');
-    this.banner.setVisible(true);
-    this.hint.setText('Press R or click — launch next probe');
-    this.hint.setVisible(true);
+    resolvePhaseLost({ banner: this.banner, hint: this.hint });
     this.hud.setText(this.buildHud());
   }
 
@@ -400,7 +405,7 @@ export class SwarmScene extends Phaser.Scene {
       this.runState !== 'playing' ? this.runState.toUpperCase() : zone?.kind === 'clear' ? 'CLEAR POCKET' : zone?.kind === 'push' ? 'PUSH' : 'TRANSIT';
     const toB = Math.max(0, Math.round(this.layout.pointB.x - this.probe.x));
     return [
-      `SWARM  ·  M2.3  SEED ${formatSeed(this.layout.seed)}${protectedNote}`,
+      formatPhaseHudLine('swarm', 'SWARM  ·  M2.3', `  SEED ${formatSeed(this.layout.seed)}${protectedNote}`),
       `HULL ${this.hull.current}/${this.hull.max} ${this.hull.toBar()}    FUEL ${Math.floor(this.fuel.current)}/${this.fuel.capacity} ${this.fuel.toBar()}`,
       `AMMO ${ammoLabel} ${mag.toBar()}    HEAT ${heat.toBar()} ${heatLabel}    ${zoneLabel}    TO B ${toB}    SWARM ${alive}    CLOCK ${formatClock(this.elapsedMs)}`,
       'WASD/arrows move   Shift dodge   Space fire   R next probe   keyboard only',
@@ -459,9 +464,12 @@ export class SwarmScene extends Phaser.Scene {
       restart: () => {
         requestNextProbe(this);
       },
+      completePhase: () => {
+        this.completeIfPlaying();
+      },
     };
     (window as Window).__swarm = debug;
-    (window as Window).__bootPhase = 'swarm';
+    exposeMap1Window('swarm');
   }
 }
 

@@ -18,7 +18,16 @@ import {
   type NoisePulse,
   type PointBTrigger,
 } from '../../milestones/m1-drift';
-import { isRunOver, onHullDepleted, requestNextProbe } from '../../milestones/m3-map1';
+import {
+  createPhaseEquipment,
+  exposeMap1Window,
+  formatPhaseHudLine,
+  isRunOver,
+  requestNextProbe,
+  resetViewportCamera,
+  resolvePhaseClear,
+  resolvePhaseLost,
+} from '../../milestones/m3-map1';
 import {
   createDebrisAmbusher,
   createDebrisCovers,
@@ -90,11 +99,13 @@ export class DebrisFieldScene extends Phaser.Scene {
     this.sfx = new Sfx();
 
     this.cameras.main.setBackgroundColor(Palette.void);
+    resetViewportCamera(this, World.width, World.height);
     this.physics.world.setBounds(0, 0, World.width, World.height);
     paintStarfield(this, World.width, World.height, Palette.coverEdge);
 
-    this.fuel = new FuelTank();
-    this.hull = new Hull();
+    const kit = createPhaseEquipment('debris-field');
+    this.fuel = kit.fuel;
+    this.hull = kit.hull;
     this.covers = createDebrisCovers(this);
     const occluders = coverRects(this.covers);
     this.grid = new NavGrid(occluders);
@@ -296,25 +307,16 @@ export class DebrisFieldScene extends Phaser.Scene {
     this.runState = 'recovered';
     this.freezeField();
     this.sfx.recovered();
-    this.banner.setColor('#5ee0ff');
-    this.banner.setText('POINT B — PROBE RECOVERED');
-    this.banner.setVisible(true);
-    this.hint.setText('Press R or click — launch next probe');
-    this.hint.setVisible(true);
+    resolvePhaseClear(this, 'debris-field', { hull: this.hull, fuel: this.fuel }, { banner: this.banner, hint: this.hint });
     this.hud.setText(this.buildHud());
   }
 
   private loseRun(): void {
-    onHullDepleted();
     this.runState = 'lost';
     this.freezeField();
     this.sfx.death();
     this.probe.setTint(0x664444);
-    this.banner.setColor('#ff6b6b');
-    this.banner.setText('HULL 0 — PROBE LOST');
-    this.banner.setVisible(true);
-    this.hint.setText('Press R or click — launch next probe');
-    this.hint.setVisible(true);
+    resolvePhaseLost({ banner: this.banner, hint: this.hint });
     this.hud.setText(this.buildHud());
   }
 
@@ -379,7 +381,7 @@ export class DebrisFieldScene extends Phaser.Scene {
       this.runState === 'playing' && this.time.now < this.spawnProtectedUntil ? '  LAUNCH WINDOW' : '';
     const pocketNote = this.inPocket ? '  POCKET — fuel regen paused' : '';
     return [
-      `DEBRIS FIELD  ·  M2.1${protectedNote}${pocketNote}`,
+      formatPhaseHudLine('debris-field', 'DEBRIS FIELD  ·  M2.1', `${protectedNote}${pocketNote}`),
       `HULL ${this.hull.current}/${this.hull.max} ${this.hull.toBar()}    FUEL ${Math.floor(this.fuel.current)}/${this.fuel.capacity} ${this.fuel.toBar()}`,
       `HUNTER ${hunterState}    CLOCK ${formatClock(this.elapsedMs)}`,
       'WASD/arrows move   Shift dodge   R next probe   keyboard only',
@@ -429,9 +431,12 @@ export class DebrisFieldScene extends Phaser.Scene {
       restart: () => {
         requestNextProbe(this);
       },
+      completePhase: () => {
+        this.completeIfPlaying();
+      },
     };
     (window as Window).__debris = debug;
-    (window as Window).__bootPhase = 'debris-field';
+    exposeMap1Window('debris-field');
   }
 }
 

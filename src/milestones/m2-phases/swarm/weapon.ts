@@ -56,9 +56,9 @@ export class Mag {
   readonly capacity: number;
   current: number;
 
-  constructor(capacity = SwarmTuning.ammoCapacity) {
+  constructor(capacity: number = SwarmTuning.ammoCapacity, current: number = capacity) {
     this.capacity = capacity;
-    this.current = capacity;
+    this.current = Math.max(0, Math.min(capacity, Math.floor(current)));
   }
 
   tryConsume(): boolean {
@@ -85,9 +85,9 @@ export class SwarmWeapon {
   private nextShotAt = 0;
   private nextDryAt = 0;
 
-  constructor() {
+  constructor(ammo?: number) {
     this.heat = new HeatSink();
-    this.mag = new Mag();
+    this.mag = new Mag(SwarmTuning.ammoCapacity, ammo ?? SwarmTuning.ammoCapacity);
   }
 
   update(deltaMs: number): void {

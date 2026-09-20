@@ -2,8 +2,8 @@ import type { PhaseId } from '../m2-phases';
 import { MAP1_PHASE_ORDER } from '../m2-phases';
 
 /**
- * A → B sequential chain stub (PRD §7 / GDD §2).
- * MVP: Map 1 six phases in order. Anomaly rewrite may later break order.
+ * A → B sequential chain (PRD §7 / GDD §2).
+ * Map 1 six phases in order. Anomaly rewrite may later break order.
  */
 export function getMap1Chain(): readonly PhaseId[] {
   return MAP1_PHASE_ORDER;
@@ -22,6 +22,5 @@ export function startRun(): PhaseId {
   if (!first) {
     throw new Error('Map 1 chain is empty.');
   }
-  // TODO(M3): launch a new probe at Point A; discard prior probe body/inventory.
   return first;
 }

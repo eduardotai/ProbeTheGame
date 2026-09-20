@@ -2,11 +2,10 @@ import { SceneKey } from './constants';
 import { getPhase, type PhaseId } from '../milestones/m2-phases';
 
 /**
- * Standalone phase boot (PRD §6).
- * Default is Drift. Debris: `?phase=debris`. Gravity Well: `?phase=gravity`.
- * Swarm: `?phase=swarm` (optional `&seed=12345` locks the A→B spine).
- * Anomaly: `?phase=anomaly` (optional `&seed=` locks the spine).
- * Boss Gate: `?phase=boss` or `?phase=boss-gate` (optional `&seed=`).
+ * Boot resolver (PRD §6 / §7).
+ *
+ * - Default `/` and `?run=map1` → Map 1 chain (Drift → … → Boss Gate).
+ * - `?phase=` always wins and boots that phase standalone (debug).
  */
 const PHASE_ALIASES: Record<string, PhaseId> = {
   drift: 'drift',
@@ -23,14 +22,26 @@ const PHASE_ALIASES: Record<string, PhaseId> = {
   bossgate: 'boss-gate',
 };
 
+export type BootMode = 'chain' | 'standalone';
+
+function readPhaseParam(search = window.location.search): string {
+  return new URLSearchParams(search).get('phase')?.trim().toLowerCase().replace(/[_\s]+/g, '-') ?? '';
+}
+
+export function resolveBootMode(search = window.location.search): BootMode {
+  return readPhaseParam(search) ? 'standalone' : 'chain';
+}
+
 export function resolveRequestedPhaseId(search = window.location.search): PhaseId {
-  const raw = new URLSearchParams(search).get('phase')?.trim().toLowerCase() ?? '';
-  const normalized = raw.replace(/[_\s]+/g, '-');
+  const normalized = readPhaseParam(search);
   return PHASE_ALIASES[normalized] ?? 'drift';
 }
 
-/** Phaser scene key for a playable phase; stubs fall back to Drift. */
+/** Phaser scene key for the first scene after Preload. */
 export function resolvePlayableSceneKey(search = window.location.search): string {
+  if (resolveBootMode(search) === 'chain') {
+    return SceneKey.Drift;
+  }
   const phase = getPhase(resolveRequestedPhaseId(search));
   return phase.sceneKey ?? SceneKey.Drift;
 }

@@ -12,7 +12,15 @@ import {
   Hull,
   tryDodge,
 } from '../../milestones/m1-drift';
-import { isRunOver, onHullDepleted, requestNextProbe } from '../../milestones/m3-map1';
+import {
+  createPhaseEquipment,
+  exposeMap1Window,
+  formatPhaseHudLine,
+  isRunOver,
+  requestNextProbe,
+  resolvePhaseClear,
+  resolvePhaseLost,
+} from '../../milestones/m3-map1';
 import { boltExpired, spawnBolt, SwarmWeapon } from '../../milestones/m2-phases/swarm/weapon';
 import {
   applyBulwarkHit,
@@ -102,9 +110,10 @@ export class BossGateScene extends Phaser.Scene {
     this.dodgeUntil = 0;
     this.shockwaves = [];
     this.sfx = new Sfx();
-    this.weapon = new SwarmWeapon();
-    this.fuel = new FuelTank();
-    this.hull = new Hull();
+    const kit = createPhaseEquipment('boss-gate');
+    this.weapon = kit.weapon;
+    this.fuel = kit.fuel;
+    this.hull = kit.hull;
 
     this.cameras.main.setBackgroundColor(Palette.void);
     setTransitBounds(this, this.layout.world);
@@ -505,25 +514,21 @@ export class BossGateScene extends Phaser.Scene {
     this.runState = 'recovered';
     this.freezeField();
     this.sfx.recovered();
-    this.banner.setColor('#5ee0ff');
-    this.banner.setText('POINT B — PROBE RECOVERED');
-    this.banner.setVisible(true);
-    this.hint.setText('Press R or click — launch next probe');
-    this.hint.setVisible(true);
+    resolvePhaseClear(
+      this,
+      'boss-gate',
+      { hull: this.hull, fuel: this.fuel, weapon: this.weapon },
+      { banner: this.banner, hint: this.hint },
+    );
     this.hud.setText(this.buildHud());
   }
 
   private loseRun(): void {
-    onHullDepleted();
     this.runState = 'lost';
     this.freezeField();
     this.sfx.death();
     this.probe.setTint(0x664444);
-    this.banner.setColor('#ff6b6b');
-    this.banner.setText('HULL 0 — PROBE LOST');
-    this.banner.setVisible(true);
-    this.hint.setText('Press R or click — launch next probe');
-    this.hint.setVisible(true);
+    resolvePhaseLost({ banner: this.banner, hint: this.hint });
     this.hud.setText(this.buildHud());
   }
 
@@ -564,7 +569,11 @@ export class BossGateScene extends Phaser.Scene {
               : 'LAUNCH';
     const toB = Math.max(0, Math.round(this.layout.pointB.x - this.probe.x));
     return [
-      `BOSS GATE  ·  M2.5  SEED ${formatSeed(this.layout.seed)}  ${gateLabel}${protectedNote}`,
+      formatPhaseHudLine(
+        'boss-gate',
+        'BOSS GATE  ·  M2.5',
+        `  SEED ${formatSeed(this.layout.seed)}  ${gateLabel}${protectedNote}`,
+      ),
       `HULL ${this.hull.current}/${this.hull.max} ${this.hull.toBar()}    FUEL ${Math.floor(this.fuel.current)}/${this.fuel.capacity} ${this.fuel.toBar()}`,
       `AMMO ${ammoLabel} ${mag.toBar()}    HEAT ${heat.toBar()} ${heatLabel}    ${zoneLabel}    ${phaseLabel(this.bulwark)} ${hpBar(this.bulwark, 10)}    TO B ${toB}    CLOCK ${formatClock(this.elapsedMs)}`,
       'WASD/arrows move   Shift dodge   Space fire   R next probe   keyboard only',
@@ -643,6 +652,9 @@ export class BossGateScene extends Phaser.Scene {
         killBulwark(this.bulwark);
         this.openTheGate();
       },
+      completePhase: () => {
+        this.completeIfPlaying();
+      },
       forceTell: (move: GateMove = 'charge') => {
         const now = this.time.now;
         const target = { x: this.probe.x, y: this.probe.y };
@@ -662,7 +674,7 @@ export class BossGateScene extends Phaser.Scene {
       },
     };
     (window as Window).__boss = debug;
-    (window as Window).__bootPhase = 'boss-gate';
+    exposeMap1Window('boss-gate');
   }
 }
 
