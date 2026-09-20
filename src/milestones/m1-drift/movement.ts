@@ -1,9 +1,7 @@
 import Phaser from 'phaser';
 import type { MoveVector } from '../../game/input/KeyboardController';
 import type { FuelTank } from './fuel';
-
-const THRUST = 620;
-const DODGE_SPEED = 380;
+import { DriftTuning } from './tuning';
 
 /**
  * Precise movement with slight inertia (GDD §3).
@@ -20,7 +18,7 @@ export function applyKeyboardMovement(
     return facing;
   }
 
-  body.setAcceleration(move.x * THRUST, move.y * THRUST);
+  body.setAcceleration(move.x * DriftTuning.thrust, move.y * DriftTuning.thrust);
 
   let nextFacing = facing;
   if (move.x !== 0 || move.y !== 0) {
@@ -33,18 +31,25 @@ export function applyKeyboardMovement(
   return nextFacing;
 }
 
-/** Fuel-limited dodge stub (GDD §4.1). No i-frames / noise model yet. */
+/** Fuel-limited dodge (GDD §4.1). Direction is current keyboard facing. */
 export function tryDodge(probe: Phaser.Physics.Arcade.Image, fuel: FuelTank, facing: number): boolean {
-  if (!fuel.tryConsumeDodge()) {
-    return false;
-  }
-
   const body = probe.body as Phaser.Physics.Arcade.Body | null;
   if (!body) {
     return false;
   }
+  if (!fuel.tryConsumeDodge()) {
+    return false;
+  }
 
-  body.setVelocity(Math.cos(facing) * DODGE_SPEED, Math.sin(facing) * DODGE_SPEED);
-  // TODO(M1): raise noise on dodge; brief invuln optional; fail if fuel empty mid-hunt.
+  body.setVelocity(Math.cos(facing) * DriftTuning.dodgeSpeed, Math.sin(facing) * DriftTuning.dodgeSpeed);
   return true;
+}
+
+export function haltProbe(probe: Phaser.Physics.Arcade.Image): void {
+  const body = probe.body as Phaser.Physics.Arcade.Body | null;
+  if (!body) {
+    return;
+  }
+  body.setAcceleration(0, 0);
+  body.setVelocity(0, 0);
 }
