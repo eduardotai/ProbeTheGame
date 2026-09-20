@@ -18,6 +18,7 @@ export class PreloadScene extends Phaser.Scene {
     this.generateBoltTexture();
     this.generateEchoTexture();
     this.generateEchoPrimeTexture();
+    this.generateWardBoltTexture();
     this.generatePointBTexture();
   }
 
@@ -113,6 +114,16 @@ export class PreloadScene extends Phaser.Scene {
     g.fillStyle(Palette.anomaly, 1);
     g.fillRect(14, 14, 8, 8);
     g.generateTexture(TextureKey.EchoPrime, 36, 36);
+    g.destroy();
+  }
+
+  private generateWardBoltTexture(): void {
+    const g = this.make.graphics({}, false);
+    g.fillStyle(Palette.ward, 1);
+    g.fillTriangle(7, 0, 0, 18, 14, 18);
+    g.fillStyle(0xffc14a, 1);
+    g.fillRect(5, 2, 4, 8);
+    g.generateTexture(TextureKey.WardBolt, 14, 18);
     g.destroy();
   }
 

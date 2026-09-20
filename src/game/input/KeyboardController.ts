@@ -31,6 +31,7 @@ export class KeyboardController {
       Phaser.Input.Keyboard.KeyCodes.D,
       Phaser.Input.Keyboard.KeyCodes.SPACE,
       Phaser.Input.Keyboard.KeyCodes.SHIFT,
+      Phaser.Input.Keyboard.KeyCodes.R,
     ]);
     this.cursors = keyboard.createCursorKeys();
     this.w = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
