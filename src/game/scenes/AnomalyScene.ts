@@ -159,7 +159,7 @@ export class AnomalyScene extends Phaser.Scene {
       .setDepth(20);
 
     this.add
-      .text(World.width - 16, 16, INVERT_HUD_LINE, {
+      .text(World.width - 20, 16, INVERT_HUD_LINE, {
         fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
         fontSize: '15px',
         color: '#ff6ad5',
@@ -476,6 +476,15 @@ export class AnomalyScene extends Phaser.Scene {
       },
       restart: () => {
         requestNextProbe(this);
+      },
+      pause: () => {
+        this.scene.pause();
+      },
+      resume: () => {
+        this.scene.resume();
+        if (this.physics.world.isPaused) {
+          this.physics.resume();
+        }
       },
     };
     (window as Window).__anomaly = debug;

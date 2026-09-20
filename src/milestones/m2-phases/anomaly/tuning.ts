@@ -23,9 +23,9 @@ export const AnomalyTuning = {
   primeMaxSpeed: 74,
   primeAccel: 150,
   wanderAccel: 48,
-  /** Inverted tell vs Swarm: dim/shrink, then lunge. */
-  tellMs: 340,
-  primeTellMs: 520,
+  /** Inverted tell vs Swarm: dim/shrink, then lunge. Longer so the wind-up reads under mirrored WASD. */
+  tellMs: 560,
+  primeTellMs: 720,
   lungeMs: 200,
   lungeSpeed: 258,
   lungeAccel: 500,

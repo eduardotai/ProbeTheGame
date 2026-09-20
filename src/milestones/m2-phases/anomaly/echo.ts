@@ -101,10 +101,10 @@ export function updateEcho(echo: Echo, target: Vec2, now: number, aggroEnabled: 
   if (echo.phase === 'tell') {
     body.setAcceleration(0, 0);
     body.setVelocity(0, 0);
-    const pulse = 0.16 + 0.2 * Math.abs(Math.sin(now * 0.028));
+    const pulse = 0.22 + 0.18 * Math.abs(Math.sin(now * 0.028));
     sprite.setAlpha(pulse);
-    sprite.setTint(0x2a1848);
-    sprite.setScale(echo.baseScale * (0.76 + 0.08 * pulse));
+    sprite.setTint(0x5a1878);
+    sprite.setScale(echo.baseScale * (0.62 + 0.1 * pulse));
     if (now >= echo.tellUntil) {
       commitLunge(echo, body, target, now);
     }
@@ -154,7 +154,7 @@ function beginTell(echo: Echo, now: number, target: Vec2): void {
   echo.tellUntil = now + (echo.kind === 'prime' ? AnomalyTuning.primeTellMs : AnomalyTuning.tellMs);
   haltEcho(echo);
   faceSprite(echo.sprite, target);
-  echo.sprite.setTint(0x2a1848);
+  echo.sprite.setTint(0x5a1878);
 }
 
 function commitLunge(echo: Echo, body: Phaser.Physics.Arcade.Body, target: Vec2, now: number): void {

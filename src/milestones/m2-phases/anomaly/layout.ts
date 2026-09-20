@@ -50,7 +50,7 @@ export function paintAnomalyField(scene: Phaser.Scene, layout: AnomalyLayout): v
     .setDepth(6);
 
   scene.add
-    .text(layout.probe.x + 210, 118, INVERT_RULE_LABEL, {
+    .text(layout.probe.x + 210, 196, INVERT_RULE_LABEL, {
       fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
       fontSize: '22px',
       color: '#ff6ad5',
@@ -59,7 +59,7 @@ export function paintAnomalyField(scene: Phaser.Scene, layout: AnomalyLayout): v
     .setDepth(6);
 
   scene.add
-    .text(layout.probe.x + 210, 148, INVERT_BIND_HINT, {
+    .text(layout.probe.x + 210, 226, INVERT_BIND_HINT, {
       fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
       fontSize: '16px',
       color: '#c89aff',
@@ -68,7 +68,7 @@ export function paintAnomalyField(scene: Phaser.Scene, layout: AnomalyLayout): v
     .setDepth(6);
 
   scene.add
-    .text(layout.probe.x + 210, 176, 'feel it on the runway — then fight through', {
+    .text(layout.probe.x + 210, 254, 'feel it on the runway — then fight through', {
       fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
       fontSize: '12px',
       color: '#8aa0b4',

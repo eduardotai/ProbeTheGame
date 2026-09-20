@@ -142,5 +142,7 @@ interface Window {
     placeProbe: (x: number, y: number) => void;
     hitProbe: (amount?: number) => number;
     restart: () => void;
+    pause: () => void;
+    resume: () => void;
   };
 }
