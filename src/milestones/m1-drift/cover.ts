@@ -7,9 +7,9 @@ export type DriftCover = {
 };
 
 const COVER_SPECS: ReadonlyArray<{ x: number; y: number; w: number; h: number }> = [
-  { x: 430, y: 220, w: 42, h: 250 },
-  { x: 720, y: 500, w: 42, h: 250 },
-  { x: 940, y: 200, w: 170, h: 32 },
+  { x: 400, y: 250, w: 44, h: 280 },
+  { x: 740, y: 480, w: 44, h: 280 },
+  { x: 980, y: 220, w: 180, h: 34 },
 ];
 
 /**

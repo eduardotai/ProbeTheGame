@@ -4,6 +4,7 @@ import { DriftTuning } from './tuning';
 export class FuelTank {
   readonly capacity: number;
   current: number;
+  private regenDelayMs = 0;
 
   constructor(capacity = DriftTuning.fuelCapacity) {
     this.capacity = capacity;
@@ -15,12 +16,20 @@ export class FuelTank {
       return false;
     }
     this.current = Math.max(0, this.current - cost);
+    this.regenDelayMs = 480;
     return true;
   }
 
   /** Slow regen so empty tank blocks dodges, not movement. */
   update(deltaMs: number): void {
-    if (deltaMs <= 0 || this.current >= this.capacity) {
+    if (deltaMs <= 0) {
+      return;
+    }
+    if (this.regenDelayMs > 0) {
+      this.regenDelayMs = Math.max(0, this.regenDelayMs - deltaMs);
+      return;
+    }
+    if (this.current >= this.capacity) {
       return;
     }
     this.current = Math.min(

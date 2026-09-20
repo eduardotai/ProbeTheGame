@@ -8,6 +8,7 @@ export {
   emitDodgeNoise,
   haltHunter,
   hasLineOfSight,
+  stunHunter,
   updateLosHunter,
   type LosHunter,
   type NoisePulse,

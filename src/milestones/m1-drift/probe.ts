@@ -14,5 +14,8 @@ export function createProbe(scene: Phaser.Scene, x: number, y: number): Phaser.P
   probe.setCollideWorldBounds(true);
   probe.setDepth(10);
   probe.setOrigin(0.5, 0.55);
+  probe.setBounce(0.15);
+  const body = probe.body as Phaser.Physics.Arcade.Body | null;
+  body?.setSize(22, 28, true);
   return probe;
 }

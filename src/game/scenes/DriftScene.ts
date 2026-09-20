@@ -17,6 +17,7 @@ import {
   Hull,
   tryDodge,
   updateLosHunter,
+  stunHunter,
   type DriftCover,
   type LosHunter,
   type NoisePulse,
@@ -47,6 +48,7 @@ export class DriftScene extends Phaser.Scene {
   private hint!: Phaser.GameObjects.Text;
   private facing = 0;
   private invulnerableUntil = 0;
+  private spawnProtectedUntil = 0;
   private runState: RunState = 'playing';
 
   constructor() {
@@ -56,6 +58,7 @@ export class DriftScene extends Phaser.Scene {
   create(): void {
     this.runState = 'playing';
     this.invulnerableUntil = 0;
+    this.spawnProtectedUntil = this.time.now + DriftTuning.spawnProtectMs;
     this.noise = null;
     this.facing = 0;
     this.sfx = new Sfx();
@@ -79,13 +82,16 @@ export class DriftScene extends Phaser.Scene {
       .setDepth(6);
 
     this.hunters = [
-      createLosHunter(this, 560, 150),
-      createLosHunter(this, 980, 560),
+      createLosHunter(this, 640, 80),
+      createLosHunter(this, 1140, 640),
     ];
     this.pointB = createPointBTrigger(this, World.width - 110, World.height / 2);
 
     for (const cover of this.covers) {
       this.physics.add.collider(this.probe, cover.visual);
+      for (const hunter of this.hunters) {
+        this.physics.add.collider(hunter.sprite, cover.visual);
+      }
     }
 
     this.losLines = this.hunters.map((hunter) =>
@@ -107,7 +113,7 @@ export class DriftScene extends Phaser.Scene {
     });
 
     for (const hunter of this.hunters) {
-      this.physics.add.overlap(this.probe, hunter.sprite, () => {
+      this.physics.add.collider(this.probe, hunter.sprite, () => {
         this.contactHunter(hunter);
       });
     }
@@ -156,6 +162,8 @@ export class DriftScene extends Phaser.Scene {
         requestNextProbe(this);
       }
     });
+
+    this.exposeDebug();
   }
 
   update(time: number, delta: number): void {
@@ -205,12 +213,22 @@ export class DriftScene extends Phaser.Scene {
       return;
     }
     const now = this.time.now;
-    if (now < this.invulnerableUntil) {
+    if (now < this.spawnProtectedUntil || now < this.invulnerableUntil) {
+      return;
+    }
+    const dist = Phaser.Math.Distance.Between(
+      this.probe.x,
+      this.probe.y,
+      hunter.sprite.x,
+      hunter.sprite.y,
+    );
+    if (dist > DriftTuning.contactRadius) {
       return;
     }
 
     this.invulnerableUntil = now + DriftTuning.hitIFramesMs;
     this.hull.applyHit(DriftTuning.contactDamage);
+    stunHunter(hunter, now + DriftTuning.hunterStunMs);
     this.sfx.hit();
     this.cameras.main.shake(90, 0.005);
 
@@ -265,14 +283,35 @@ export class DriftScene extends Phaser.Scene {
     const locked = this.hunters.some((hunter) => hunter.seesTarget);
     const hunting = this.hunters.some((hunter) => hunter.lastSeen !== null);
     const hunterState = locked ? 'LOS LOCK' : hunting ? 'LAST SEEN' : 'PATROL';
-    const hullColorNote = this.hull.current <= 1 ? '  !' : '';
+    const protectedNote = this.time.now < this.spawnProtectedUntil ? '  LAUNCH WINDOW' : '';
     return [
-      `DRIFT  ·  ${phaseRegistry.drift.title}  ·  M1`,
-      `HULL ${this.hull.toBar()}${hullColorNote}   FUEL ${this.fuel.current.toFixed(0)}/${this.fuel.capacity}  ${this.fuel.toBar()}`,
+      `DRIFT  ·  ${phaseRegistry.drift.title}  ·  M1${protectedNote}`,
+      `HULL ${this.hull.current}/${this.hull.max} ${this.hull.toBar()}    FUEL ${Math.floor(this.fuel.current)}/${this.fuel.capacity} ${this.fuel.toBar()}`,
       `HUNTER ${hunterState}`,
       'WASD / arrows  move    Shift  dodge (fuel + noise)    R  next probe',
       'Keyboard only. No mouse aiming.',
     ].join('\n');
+  }
+
+  private exposeDebug(): void {
+    const debug = {
+      snapshot: () => ({
+        runState: this.runState,
+        hull: this.hull.current,
+        hullMax: this.hull.max,
+        fuel: Number(this.fuel.current.toFixed(2)),
+        fuelCapacity: this.fuel.capacity,
+        probe: { x: this.probe.x, y: this.probe.y },
+        hunters: this.hunters.map((hunter) => ({
+          x: hunter.sprite.x,
+          y: hunter.sprite.y,
+          seesTarget: hunter.seesTarget,
+          lastSeen: hunter.lastSeen,
+        })),
+        pointBReached: this.pointB.reached,
+      }),
+    };
+    (window as Window).__drift = debug;
   }
 
   private drawStarfield(): void {

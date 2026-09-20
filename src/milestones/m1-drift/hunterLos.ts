@@ -17,6 +17,7 @@ export type LosHunter = {
   lastSeen: Vec2 | null;
   home: Vec2;
   patrolDir: number;
+  stunnedUntil: number;
 };
 
 /**
@@ -30,12 +31,16 @@ export function createLosHunter(scene: Phaser.Scene, x: number, y: number): LosH
   sprite.setCollideWorldBounds(true);
   sprite.setDepth(8);
   sprite.setImmovable(false);
+  sprite.setBounce(0.35);
+  const body = sprite.body as Phaser.Physics.Arcade.Body | null;
+  body?.setSize(22, 26, true);
   return {
     sprite,
     seesTarget: false,
     lastSeen: null,
     home: { x, y },
     patrolDir: x < 640 ? 1 : -1,
+    stunnedUntil: 0,
   };
 }
 
@@ -94,6 +99,12 @@ export function updateLosHunter(
     return;
   }
 
+  if (now < hunter.stunnedUntil) {
+    body.setAcceleration(0, 0);
+    sprite.setAlpha(0.85);
+    return;
+  }
+
   const from = { x: sprite.x, y: sprite.y };
   const dist = Phaser.Math.Distance.Between(from.x, from.y, target.x, target.y);
   const inRange = dist <= DriftTuning.losRange;
@@ -135,6 +146,11 @@ export function updateLosHunter(
   }
   body.setAcceleration(hunter.patrolDir * 70, (hunter.home.y - sprite.y) * 1.6);
   sprite.setAlpha(0.72);
+}
+
+export function stunHunter(hunter: LosHunter, until: number): void {
+  hunter.stunnedUntil = until;
+  haltHunter(hunter);
 }
 
 export function haltHunter(hunter: LosHunter): void {
