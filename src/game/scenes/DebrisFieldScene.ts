@@ -5,61 +5,87 @@ import { Sfx } from '../audio/Sfx';
 import {
   applyKeyboardMovement,
   coverRects,
-  createDriftCovers,
-  createLosHunter,
   createPointBTrigger,
   createProbe,
   DriftTuning,
   emitDodgeNoise,
   FuelTank,
-  haltHunter,
   haltProbe,
   Hull,
+  hasLineOfSight,
   tryDodge,
-  updateLosHunter,
-  stunHunter,
-  type DriftCover,
-  type LosHunter,
   type NoisePulse,
   type PointBTrigger,
 } from '../../milestones/m1-drift';
 import { isRunOver, onHullDepleted, requestNextProbe } from '../../milestones/m3-map1';
+import {
+  createDebrisAmbusher,
+  createDebrisCovers,
+  createFunnelHunter,
+  DEBRIS_SPAWN,
+  DebrisTuning,
+  haltAmbusher,
+  haltHunter,
+  isInSafePocket,
+  NavGrid,
+  stunAmbusher,
+  stunHunter,
+  updateDebrisAmbusher,
+  updateFunnelHunter,
+  type DebrisAmbusher,
+  type DebrisCover,
+  type FunnelHunter,
+} from '../../milestones/m2-phases/debris-field';
 
 type RunState = 'playing' | 'recovered' | 'lost';
 
+type Threat = {
+  sprite: Phaser.Physics.Arcade.Image;
+  seesTarget: boolean;
+  lastSeen: { x: number; y: number } | null;
+};
+
 /**
- * Milestone 1 — Drift (GDD §4.1 / PRD §5).
- * Keyboard-only probe, fuel dodges, LOS hunters, Point B or hull 0.
+ * Milestone 2.1 — Debris Field (GDD §4.2 / PRD §6).
+ * Cover occludes LOS both ways. Hunters funnel gaps. Safe pockets pause fuel regen.
  */
-export class DriftScene extends Phaser.Scene {
+export class DebrisFieldScene extends Phaser.Scene {
   private keys!: KeyboardController;
   private sfx!: Sfx;
   private probe!: Phaser.Physics.Arcade.Image;
-  private hunters!: LosHunter[];
+  private hunters!: FunnelHunter[];
+  private ambusher!: DebrisAmbusher;
   private pointB!: PointBTrigger;
-  private covers!: DriftCover[];
+  private covers!: DebrisCover[];
+  private grid!: NavGrid;
   private fuel!: FuelTank;
   private hull!: Hull;
   private noise: NoisePulse | null = null;
   private losLines!: Phaser.GameObjects.Line[];
+  private ghosts!: Phaser.GameObjects.Rectangle[];
+  private memory!: Array<{ x: number; y: number } | null>;
   private hud!: Phaser.GameObjects.Text;
   private banner!: Phaser.GameObjects.Text;
   private hint!: Phaser.GameObjects.Text;
   private facing = 0;
   private invulnerableUntil = 0;
   private spawnProtectedUntil = 0;
+  private elapsedMs = 0;
+  private inPocket = false;
   private runState: RunState = 'playing';
 
   constructor() {
-    super(SceneKey.Drift);
+    super(SceneKey.DebrisField);
   }
 
   create(): void {
     this.runState = 'playing';
     this.invulnerableUntil = 0;
-    this.spawnProtectedUntil = this.time.now + DriftTuning.spawnProtectMs;
+    this.spawnProtectedUntil = this.time.now + DebrisTuning.spawnProtectMs;
     this.noise = null;
     this.facing = 0;
+    this.elapsedMs = 0;
+    this.inPocket = false;
     this.sfx = new Sfx();
 
     this.cameras.main.setBackgroundColor(Palette.void);
@@ -68,11 +94,13 @@ export class DriftScene extends Phaser.Scene {
 
     this.fuel = new FuelTank();
     this.hull = new Hull();
-    this.covers = createDriftCovers(this);
+    this.covers = createDebrisCovers(this);
+    const occluders = coverRects(this.covers);
+    this.grid = new NavGrid(occluders);
 
-    this.probe = createProbe(this, 140, World.height / 2);
+    this.probe = createProbe(this, DEBRIS_SPAWN.probe.x, DEBRIS_SPAWN.probe.y);
     this.add
-      .text(140, World.height / 2 + 36, 'A', {
+      .text(DEBRIS_SPAWN.probe.x, DEBRIS_SPAWN.probe.y + 36, 'A', {
         fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
         fontSize: '14px',
         color: '#8aa0b4',
@@ -80,26 +108,35 @@ export class DriftScene extends Phaser.Scene {
       .setOrigin(0.5, 0)
       .setDepth(6);
 
-    this.hunters = [
-      createLosHunter(this, 640, 80),
-      createLosHunter(this, 1140, 640),
-    ];
-    this.pointB = createPointBTrigger(this, World.width - 110, World.height / 2);
+    this.hunters = DEBRIS_SPAWN.funnelHunters.map((spec) =>
+      createFunnelHunter(this, spec.x, spec.y, spec.gap),
+    );
+    this.ambusher = createDebrisAmbusher(this, DEBRIS_SPAWN.ambusher.x, DEBRIS_SPAWN.ambusher.y);
+    this.pointB = createPointBTrigger(this, DEBRIS_SPAWN.pointB.x, DEBRIS_SPAWN.pointB.y);
 
+    const threats = this.threats();
     for (const cover of this.covers) {
       this.physics.add.collider(this.probe, cover.visual);
-      for (const hunter of this.hunters) {
-        this.physics.add.collider(hunter.sprite, cover.visual);
+      for (const threat of threats) {
+        this.physics.add.collider(threat.sprite, cover.visual);
       }
     }
 
-    this.losLines = this.hunters.map((hunter) =>
+    this.losLines = threats.map((threat) =>
       this.add
-        .line(0, 0, hunter.sprite.x, hunter.sprite.y, this.probe.x, this.probe.y, Palette.hunter, 0.35)
+        .line(0, 0, threat.sprite.x, threat.sprite.y, this.probe.x, this.probe.y, Palette.hunter, 0.35)
         .setOrigin(0, 0)
         .setLineWidth(1)
-        .setDepth(5),
+        .setDepth(5)
+        .setVisible(false),
     );
+    this.ghosts = threats.map((threat) =>
+      this.add
+        .rectangle(threat.sprite.x, threat.sprite.y, 8, 8, Palette.hunter, 0.35)
+        .setDepth(7)
+        .setVisible(false),
+    );
+    this.memory = threats.map(() => null);
 
     const keyboard = this.input.keyboard;
     if (!keyboard) {
@@ -113,9 +150,12 @@ export class DriftScene extends Phaser.Scene {
 
     for (const hunter of this.hunters) {
       this.physics.add.collider(this.probe, hunter.sprite, () => {
-        this.contactHunter(hunter);
+        this.contactThreat(hunter);
       });
     }
+    this.physics.add.collider(this.probe, this.ambusher.sprite, () => {
+      this.contactThreat(this.ambusher);
+    });
 
     this.hud = this.add
       .text(16, 16, '', {
@@ -123,25 +163,31 @@ export class DriftScene extends Phaser.Scene {
         fontSize: '14px',
         color: '#8aa0b4',
         lineSpacing: 6,
+        backgroundColor: '#05070a',
+        padding: { x: 10, y: 8 },
       })
       .setScrollFactor(0)
       .setDepth(20);
 
     this.banner = this.add
-      .text(World.width / 2, 300, '', {
+      .text(World.width / 2, 292, '', {
         fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
         fontSize: '22px',
         color: '#5ee0ff',
+        backgroundColor: '#05070a',
+        padding: { x: 14, y: 8 },
       })
       .setOrigin(0.5, 0)
       .setVisible(false)
       .setDepth(21);
 
     this.hint = this.add
-      .text(World.width / 2, 338, '', {
+      .text(World.width / 2, 340, '', {
         fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
         fontSize: '14px',
         color: '#8aa0b4',
+        backgroundColor: '#05070a',
+        padding: { x: 12, y: 6 },
       })
       .setOrigin(0.5, 0)
       .setVisible(false)
@@ -176,7 +222,11 @@ export class DriftScene extends Phaser.Scene {
     }
 
     this.sfx.resume();
-    this.fuel.update(delta);
+    this.elapsedMs += delta;
+    this.inPocket = isInSafePocket(this.probe.x, this.probe.y);
+    if (!this.inPocket) {
+      this.fuel.update(delta);
+    }
 
     const move = this.keys.getMoveVector();
     this.facing = applyKeyboardMovement(this.probe, move, this.facing, delta);
@@ -194,20 +244,15 @@ export class DriftScene extends Phaser.Scene {
 
     const occluders = coverRects(this.covers);
     const target = { x: this.probe.x, y: this.probe.y };
-    this.hunters.forEach((hunter, index) => {
-      updateLosHunter(hunter, target, occluders, this.noise, time);
-      const line = this.losLines[index];
-      if (!line) {
-        return;
-      }
-      line.setTo(hunter.sprite.x, hunter.sprite.y, this.probe.x, this.probe.y);
-      line.setAlpha(hunter.seesTarget ? 0.5 : hunter.lastSeen ? 0.18 : 0.06);
-    });
-
+    for (const hunter of this.hunters) {
+      updateFunnelHunter(hunter, target, occluders, this.grid, this.noise, time);
+    }
+    updateDebrisAmbusher(this.ambusher, target, occluders, this.grid, this.noise, time);
+    this.updateVision(occluders);
     this.hud.setText(this.buildHud());
   }
 
-  private contactHunter(hunter: LosHunter): void {
+  private contactThreat(threat: { sprite: Phaser.Physics.Arcade.Image }): void {
     if (this.runState !== 'playing') {
       return;
     }
@@ -218,8 +263,8 @@ export class DriftScene extends Phaser.Scene {
     const dist = Phaser.Math.Distance.Between(
       this.probe.x,
       this.probe.y,
-      hunter.sprite.x,
-      hunter.sprite.y,
+      threat.sprite.x,
+      threat.sprite.y,
     );
     if (dist > DriftTuning.contactRadius) {
       return;
@@ -227,13 +272,20 @@ export class DriftScene extends Phaser.Scene {
 
     this.invulnerableUntil = now + DriftTuning.hitIFramesMs;
     this.hull.applyHit(DriftTuning.contactDamage);
-    stunHunter(hunter, now + DriftTuning.hunterStunMs);
+    if (threat === this.ambusher) {
+      stunAmbusher(this.ambusher, now + DriftTuning.hunterStunMs);
+    } else {
+      const hunter = this.hunters.find((item) => item === threat);
+      if (hunter) {
+        stunHunter(hunter, now + DriftTuning.hunterStunMs);
+      }
+    }
     this.sfx.hit();
     this.cameras.main.shake(90, 0.005);
 
     const body = this.probe.body as Phaser.Physics.Arcade.Body | null;
     if (body) {
-      const angle = Phaser.Math.Angle.Between(hunter.sprite.x, hunter.sprite.y, this.probe.x, this.probe.y);
+      const angle = Phaser.Math.Angle.Between(threat.sprite.x, threat.sprite.y, this.probe.x, this.probe.y);
       body.setVelocity(Math.cos(angle) * DriftTuning.hitKnockback, Math.sin(angle) * DriftTuning.hitKnockback);
     }
 
@@ -277,15 +329,46 @@ export class DriftScene extends Phaser.Scene {
     for (const hunter of this.hunters) {
       haltHunter(hunter);
     }
+    haltAmbusher(this.ambusher);
     for (const line of this.losLines) {
-      line.setAlpha(0);
+      line.setVisible(false);
     }
     this.physics.pause();
   }
 
+  private updateVision(occluders: readonly Phaser.Geom.Rectangle[]): void {
+    const probePos = { x: this.probe.x, y: this.probe.y };
+    this.threats().forEach((threat, index) => {
+      const seen = hasLineOfSight(probePos, { x: threat.sprite.x, y: threat.sprite.y }, occluders);
+      threat.sprite.setVisible(seen);
+      const line = this.losLines[index];
+      const ghost = this.ghosts[index];
+      if (seen) {
+        this.memory[index] = { x: threat.sprite.x, y: threat.sprite.y };
+        ghost?.setVisible(false);
+        if (line) {
+          line.setVisible(true);
+          line.setTo(threat.sprite.x, threat.sprite.y, this.probe.x, this.probe.y);
+          line.setAlpha(threat.seesTarget ? 0.5 : 0.18);
+          line.setStrokeStyle(1, threat === this.ambusher ? Palette.ambusher : Palette.hunter, threat.seesTarget ? 0.5 : 0.18);
+        }
+        return;
+      }
+      line?.setVisible(false);
+      const ping = this.memory[index];
+      if (ping && ghost) {
+        ghost.setPosition(ping.x, ping.y);
+        ghost.setFillStyle(threat === this.ambusher ? Palette.ambusher : Palette.hunter, 0.32);
+        ghost.setVisible(true);
+      }
+    });
+  }
+
   private buildHud(): string {
-    const locked = this.hunters.some((hunter) => hunter.seesTarget);
-    const hunting = this.hunters.some((hunter) => hunter.lastSeen !== null);
+    const threats = this.threats();
+    const visible = threats.filter((threat) => threat.sprite.visible);
+    const locked = visible.some((threat) => threat.seesTarget);
+    const tracking = threats.some((threat) => threat.lastSeen !== null);
     const hunterState =
       this.runState === 'recovered'
         ? 'CLEAR'
@@ -293,17 +376,24 @@ export class DriftScene extends Phaser.Scene {
           ? 'KILL'
           : locked
             ? 'LOS LOCK'
-            : hunting
-              ? 'LAST SEEN'
-              : 'PATROL';
+            : visible.length > 0
+              ? 'CONTACT'
+              : tracking
+                ? 'LAST SEEN'
+                : 'OCCLUDED';
     const protectedNote =
       this.runState === 'playing' && this.time.now < this.spawnProtectedUntil ? '  LAUNCH WINDOW' : '';
+    const pocketNote = this.inPocket ? '  POCKET — fuel regen paused' : '';
     return [
-      `DRIFT  ·  M1${protectedNote}`,
+      `DEBRIS FIELD  ·  M2.1${protectedNote}${pocketNote}`,
       `HULL ${this.hull.current}/${this.hull.max} ${this.hull.toBar()}    FUEL ${Math.floor(this.fuel.current)}/${this.fuel.capacity} ${this.fuel.toBar()}`,
-      `HUNTER ${hunterState}`,
+      `HUNTER ${hunterState}    CLOCK ${formatClock(this.elapsedMs)}`,
       'WASD/arrows move   Shift dodge   R next probe   keyboard only',
     ].join('\n');
+  }
+
+  private threats(): Threat[] {
+    return [...this.hunters, this.ambusher];
   }
 
   private exposeDebug(): void {
@@ -314,18 +404,40 @@ export class DriftScene extends Phaser.Scene {
         hullMax: this.hull.max,
         fuel: Number(this.fuel.current.toFixed(2)),
         fuelCapacity: this.fuel.capacity,
+        elapsedMs: Math.round(this.elapsedMs),
+        inPocket: this.inPocket,
         probe: { x: this.probe.x, y: this.probe.y },
-        hunters: this.hunters.map((hunter) => ({
-          x: hunter.sprite.x,
-          y: hunter.sprite.y,
-          seesTarget: hunter.seesTarget,
-          lastSeen: hunter.lastSeen,
+        hunters: this.threats().map((threat, index) => ({
+          x: threat.sprite.x,
+          y: threat.sprite.y,
+          seesTarget: threat.seesTarget,
+          lastSeen: threat.lastSeen,
+          visibleToProbe: threat.sprite.visible,
+          kind: (index === this.hunters.length ? 'ambusher' : 'funnel') as 'ambusher' | 'funnel',
         })),
         pointBReached: this.pointB.reached,
       }),
+      placeProbe: (x: number, y: number) => {
+        this.probe.setPosition(x, y);
+        const body = this.probe.body as Phaser.Physics.Arcade.Body | null;
+        body?.reset(x, y);
+      },
+      hitProbe: (amount = 1) => {
+        if (this.runState !== 'playing') {
+          return this.hull.current;
+        }
+        this.hull.applyHit(amount);
+        if (isRunOver(this.hull.current)) {
+          this.loseRun();
+        }
+        return this.hull.current;
+      },
+      restart: () => {
+        requestNextProbe(this);
+      },
     };
-    (window as Window).__drift = debug;
-    (window as Window).__bootPhase = 'drift';
+    (window as Window).__debris = debug;
+    (window as Window).__bootPhase = 'debris-field';
   }
 
   private drawStarfield(): void {
@@ -338,4 +450,11 @@ export class DriftScene extends Phaser.Scene {
       g.fillRect(x, y, size, size);
     }
   }
+}
+
+function formatClock(ms: number): string {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
 }

@@ -8,6 +8,7 @@ import type { PhaseModule } from './phaseRegistry';
 export const anomalyPhase: PhaseModule = {
   id: 'anomaly',
   title: 'Anomaly',
+  sceneKey: null,
   bootStandalone: () => {
     // TODO(M2): pick one invert rule (mirrored controls / heal hurts / silence attracts / dark exit).
   },

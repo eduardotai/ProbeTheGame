@@ -4,7 +4,8 @@ import type { PhaseModule } from './phaseRegistry';
 export const gravityWellPhase: PhaseModule = {
   id: 'gravity-well',
   title: 'Gravity Well',
+  sceneKey: null,
   bootStandalone: () => {
-    // TODO(M2): center-mass pull; risky shortcut vs safer long route.
+    // TODO(M2.2): center-mass pull; risky shortcut vs safer long route.
   },
 };

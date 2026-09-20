@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { BootScene } from './scenes/BootScene';
 import { PreloadScene } from './scenes/PreloadScene';
 import { DriftScene } from './scenes/DriftScene';
+import { DebrisFieldScene } from './scenes/DebrisFieldScene';
 import { Palette, World } from './constants';
 
 /**
@@ -31,5 +32,5 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
     mouse: true,
     touch: false,
   },
-  scene: [BootScene, PreloadScene, DriftScene],
+  scene: [BootScene, PreloadScene, DriftScene, DebrisFieldScene],
 };
