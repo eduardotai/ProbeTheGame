@@ -45,7 +45,7 @@ export function paintGravityField(scene: Phaser.Scene, layout: GravityLayout): v
     .setDepth(6)
     .setAlpha(0.8);
   scene.add
-    .text(layout.probe.x + 280, 58, 'LONG WAY', { ...labelStyle, color: '#6a9aac' })
+    .text(640, 150, 'LONG WAY', { ...labelStyle, color: '#6a9aac' })
     .setOrigin(0.5, 0.5)
     .setDepth(6)
     .setAlpha(0.8);
@@ -55,7 +55,7 @@ export function paintGravityField(scene: Phaser.Scene, layout: GravityLayout): v
     .setDepth(6)
     .setAlpha(0.85);
   scene.add
-    .text(x, 58, 'LONG WAY', { ...labelStyle, color: '#6a9aac' })
+    .text(x, 118, 'LONG WAY', { ...labelStyle, color: '#6a9aac' })
     .setOrigin(0.5, 0.5)
     .setDepth(6)
     .setAlpha(0.75);
