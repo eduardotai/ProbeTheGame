@@ -13,6 +13,8 @@ type Aabb = { x: number; y: number; w: number; h: number };
  * Shortcut is the A→B line that cuts north of the well (stronger pull).
  */
 const COVER_SPECS: readonly Aabb[] = [
+  // Spawn scar — breaks A→trench sightline so launch is not a free LOS gift
+  { x: 236, y: 358, w: 32, h: 100 },
   { x: 340, y: 668, w: 200, h: 28 },
   { x: 640, y: 690, w: 300, h: 24 },
   { x: 940, y: 668, w: 200, h: 28 },
@@ -44,8 +46,8 @@ export const GRAVITY_SPAWN = {
   probe: { x: 108, y: 348 },
   pointB: { x: World.width - 108, y: 348 },
   shortcutHunters: [
-    { x: 490, y: 286 },
-    { x: 860, y: 292 },
+    { x: 580, y: 268 },
+    { x: 920, y: 284 },
   ],
   longHunter: { x: 640, y: 96 },
   bulwark: { x: 670, y: 360 },

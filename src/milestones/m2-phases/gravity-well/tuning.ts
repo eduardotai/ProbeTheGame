@@ -23,5 +23,5 @@ export const GravityTuning = {
   /** Bulwark will not chase beyond this distance from the well. */
   bulwarkLeash: 236,
   bulwarkHomeRadius: 18,
-  spawnProtectMs: 1600,
+  spawnProtectMs: 1800,
 } as const;
