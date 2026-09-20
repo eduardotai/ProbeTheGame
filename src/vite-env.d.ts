@@ -36,5 +36,8 @@ interface Window {
   };
   __debris?: {
     snapshot: () => DebrisDebugSnapshot;
+    placeProbe: (x: number, y: number) => void;
+    hitProbe: (amount?: number) => number;
+    restart: () => void;
   };
 }

@@ -163,25 +163,31 @@ export class DebrisFieldScene extends Phaser.Scene {
         fontSize: '14px',
         color: '#8aa0b4',
         lineSpacing: 6,
+        backgroundColor: '#05070a',
+        padding: { x: 10, y: 8 },
       })
       .setScrollFactor(0)
       .setDepth(20);
 
     this.banner = this.add
-      .text(World.width / 2, 300, '', {
+      .text(World.width / 2, 292, '', {
         fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
         fontSize: '22px',
         color: '#5ee0ff',
+        backgroundColor: '#05070a',
+        padding: { x: 14, y: 8 },
       })
       .setOrigin(0.5, 0)
       .setVisible(false)
       .setDepth(21);
 
     this.hint = this.add
-      .text(World.width / 2, 338, '', {
+      .text(World.width / 2, 340, '', {
         fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
         fontSize: '14px',
         color: '#8aa0b4',
+        backgroundColor: '#05070a',
+        padding: { x: 12, y: 6 },
       })
       .setOrigin(0.5, 0)
       .setVisible(false)
@@ -380,8 +386,8 @@ export class DebrisFieldScene extends Phaser.Scene {
     const pocketNote = this.inPocket ? '  POCKET — fuel regen paused' : '';
     return [
       `DEBRIS FIELD  ·  M2.1${protectedNote}${pocketNote}`,
-      `HULL ${this.hull.current}/${this.hull.max} ${this.hull.toBar()}    FUEL ${Math.floor(this.fuel.current)}/${this.fuel.capacity} ${this.fuel.toBar()}    CLOCK ${formatClock(this.elapsedMs)}`,
-      `HUNTER ${hunterState}`,
+      `HULL ${this.hull.current}/${this.hull.max} ${this.hull.toBar()}    FUEL ${Math.floor(this.fuel.current)}/${this.fuel.capacity} ${this.fuel.toBar()}`,
+      `HUNTER ${hunterState}    CLOCK ${formatClock(this.elapsedMs)}`,
       'WASD/arrows move   Shift dodge   R next probe   keyboard only',
     ].join('\n');
   }
@@ -411,6 +417,24 @@ export class DebrisFieldScene extends Phaser.Scene {
         })),
         pointBReached: this.pointB.reached,
       }),
+      placeProbe: (x: number, y: number) => {
+        this.probe.setPosition(x, y);
+        const body = this.probe.body as Phaser.Physics.Arcade.Body | null;
+        body?.reset(x, y);
+      },
+      hitProbe: (amount = 1) => {
+        if (this.runState !== 'playing') {
+          return this.hull.current;
+        }
+        this.hull.applyHit(amount);
+        if (isRunOver(this.hull.current)) {
+          this.loseRun();
+        }
+        return this.hull.current;
+      },
+      restart: () => {
+        requestNextProbe(this);
+      },
     };
     (window as Window).__debris = debug;
     (window as Window).__bootPhase = 'debris-field';

@@ -25,15 +25,15 @@ const COVER_SPECS: readonly Aabb[] = [
   { x: 300, y: 188, w: 64, h: 216 },
   { x: 300, y: 552, w: 64, h: 184 },
 
-  // Top-left L-pocket (blind corner)
-  { x: 168, y: 40, w: 164, h: 24 },
-  { x: 94, y: 118, w: 26, h: 156 },
-  { x: 158, y: 172, w: 86, h: 24 },
+  // Top-left L-pocket below the HUD. South-east opening into the north sneak.
+  { x: 148, y: 118, w: 160, h: 20 },
+  { x: 72, y: 156, w: 20, h: 72 },
+  { x: 122, y: 188, w: 82, h: 20 },
 
-  // Bottom-left L-pocket
-  { x: 176, y: 688, w: 168, h: 24 },
-  { x: 100, y: 618, w: 26, h: 128 },
-  { x: 172, y: 562, w: 92, h: 24 },
+  // Bottom-left L-pocket. North-east opening into the south sneak.
+  { x: 156, y: 696, w: 180, h: 20 },
+  { x: 70, y: 650, w: 20, h: 80 },
+  { x: 124, y: 618, w: 90, h: 20 },
 
   // Belt 2 — blocks the straight shot after gap 1; north or south around the pillar
   { x: 548, y: 86, w: 236, h: 40 },
@@ -45,6 +45,9 @@ const COVER_SPECS: readonly Aabb[] = [
   { x: 456, y: 536, w: 72, h: 36 },
   { x: 748, y: 268, w: 42, h: 96 },
 
+  // Spawn slab — breaks the A→gap sightline so launch is not a free LOS gift
+  { x: 220, y: 360, w: 36, h: 100 },
+
   // Belt 3 — last funnel before B (gap y≈348–458)
   { x: 886, y: 196, w: 64, h: 284 },
   { x: 886, y: 586, w: 64, h: 236 },
@@ -55,14 +58,14 @@ const COVER_SPECS: readonly Aabb[] = [
 ];
 
 const POCKET_FLOORS: readonly Aabb[] = [
-  { x: 130, y: 72, w: 110, h: 88 },
-  { x: 134, y: 586, w: 112, h: 90 },
+  { x: 84, y: 128, w: 150, h: 56 },
+  { x: 84, y: 620, w: 160, h: 62 },
 ];
 
 /** Inner safe-pocket AABBs (top-left). Fuel regen pauses while the probe is inside. */
 export const SAFE_POCKETS: readonly Aabb[] = [
-  { x: 118, y: 58, w: 118, h: 108 },
-  { x: 122, y: 572, w: 122, h: 108 },
+  { x: 84, y: 126, w: 160, h: 62 },
+  { x: 82, y: 616, w: 168, h: 70 },
 ];
 
 export const DEBRIS_SPAWN = {
@@ -70,11 +73,11 @@ export const DEBRIS_SPAWN = {
   pointB: { x: World.width - 105, y: World.height / 2 },
   funnelHunters: [
     {
-      x: 372,
-      y: 368,
+      x: 500,
+      y: 200,
       gap: [
-        { x: 372, y: 318 },
-        { x: 372, y: 438 },
+        { x: 372, y: 330 },
+        { x: 372, y: 430 },
       ] as const,
     },
     {
@@ -86,7 +89,7 @@ export const DEBRIS_SPAWN = {
       ] as const,
     },
   ],
-  ambusher: { x: 838, y: 236 },
+  ambusher: { x: 780, y: 248 },
 } as const;
 
 export function createDebrisCovers(scene: Phaser.Scene): DebrisCover[] {
