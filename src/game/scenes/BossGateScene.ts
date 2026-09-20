@@ -418,7 +418,7 @@ export class BossGateScene extends Phaser.Scene {
     this.hpLabel.setText(
       this.bulwark.alive ? `GATE BULWARK  ${hpBar(this.bulwark, 12)}` : 'GATE BULWARK  DOWN',
     );
-    this.hpLabel.setColor(this.bulwark.alive ? '#ff8a5a' : '#5ee0ff');
+    this.hpLabel.setVisible(this.bulwark.alive);
   }
 
   private contactBulwark(): void {
@@ -555,11 +555,13 @@ export class BossGateScene extends Phaser.Scene {
     const zoneLabel =
       this.runState !== 'playing'
         ? this.runState.toUpperCase()
-        : zone?.kind === 'arena'
-          ? 'ARENA'
-          : zone?.kind === 'approach'
-            ? 'APPROACH'
-            : 'LAUNCH';
+        : this.probe.x >= this.layout.arena.x1
+          ? 'GATE'
+          : zone?.kind === 'arena'
+            ? 'ARENA'
+            : zone?.kind === 'approach'
+              ? 'APPROACH'
+              : 'LAUNCH';
     const toB = Math.max(0, Math.round(this.layout.pointB.x - this.probe.x));
     return [
       `BOSS GATE  ·  M2.5  SEED ${formatSeed(this.layout.seed)}  ${gateLabel}${protectedNote}`,
@@ -612,6 +614,7 @@ export class BossGateScene extends Phaser.Scene {
         const body = this.probe.body as Phaser.Physics.Arcade.Body | null;
         body?.reset(x, y);
         this.cameras.main.centerOn(x, y);
+        this.spawnProtectedUntil = 0;
       },
       hitProbe: (amount = 1) => {
         if (this.runState !== 'playing') {

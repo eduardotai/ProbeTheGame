@@ -42,7 +42,7 @@ export function createGateWall(scene: Phaser.Scene, layout: BossGateLayout): Gat
   scene.physics.add.existing(visual, true);
 
   const label = scene.add
-    .text(layout.gate.x, h / 2, 'SEALED\nDESTROY THE GUARD', {
+    .text(layout.gate.x, h / 2 - 88, 'SEALED\nDESTROY THE GUARD', {
       fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
       fontSize: '13px',
       color: '#ff8a5a',
