@@ -158,6 +158,7 @@ M2 Phases 2–6 (one at a time, each standalone-bootable)  ← done
     anomaly/          M2.4 playable — mirrored controls / Echo dim-tell / long spine
     boss-gate/        M2.5 playable — Gate Bulwark / destroy to open B / tells
   src/game/proc/      shared seeded RNG + transit camera (Swarm / Anomaly / Boss Gate)
+  src/game/art/       pixel atlas (on main; M3 does not rewrite it)
 
 M3 Full Map 1 loop  ← done
   src/milestones/m3-map1/
