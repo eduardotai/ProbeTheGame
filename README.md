@@ -4,7 +4,7 @@ Sci-fi roguelike set in **Thursday Arena** (Grokbot Galaxy). You are not a hero 
 
 > You are not a hero. You are a probe. You do not return.
 
-**Current playable gate: Milestone 2.1 — Debris Field** (M1 Drift still boots by default). Phaser 3 + TypeScript + Vite. Greybox silhouettes. Keyboard-only.
+**Current playable gate: Milestone 2.2 — Gravity Well** (M1 Drift still boots by default). Phaser 3 + TypeScript + Vite. Greybox silhouettes. Keyboard-only.
 
 Design source of truth (do not contradict):
 
@@ -35,6 +35,7 @@ npm run preview  # serve the production bundle
 |-------|-----|
 | Drift (default) | `/` or `?phase=drift` |
 | Debris Field | `?phase=debris` or `?phase=debris-field` |
+| Gravity Well | `?phase=gravity` or `?phase=gravity-well` |
 
 Other Map 1 ids resolve in the phase registry but are still stubs (they fall back to Drift).
 
@@ -55,6 +56,10 @@ Launch at **A** (left). Cross open space to **B** (right). Hunters chase when th
 ### M2.1 Debris Field
 
 Cover slabs block vision **both ways** (hunters behind debris are hidden; they cannot see you through slabs either). Hunters **funnel the gaps** instead of walking through rock. Two L-shaped **safe pockets** (northwest / southwest) hide you but **pause fuel regen** and burn the clock. The straight line to B is the trap — an **Ambusher** lunges when you commit to the last corridor. Reach B or die; **R** relaunches this phase (standalone).
+
+### M2.2 Gravity Well
+
+A center mass pulls **always**. The **shortcut** is the A→B line that cuts north of the well: shorter, stronger pull, denser threats (two hunters + a Gravity Bulwark that anchors near the well). The **long way** loops the north rim: weaker pull, one hunter, slower. Fall inside the horizon and hull hits 0. Reach B or die; **R** relaunches this phase (standalone).
 
 ## Milestone map
 
@@ -77,7 +82,8 @@ M2 Phases 2–6 (one at a time, each standalone-bootable)
     phaseRegistry.ts  Map 1 order + registry
     debris-field/     M2.1 playable — cover / funnel gaps / pockets
     debrisField.ts    registry entry (sceneKey DebrisField)
-    gravityWell.ts    stub — pull + shortcut vs long way
+    gravity-well/     M2.2 playable — center pull / shortcut vs long way
+    gravityWell.ts    registry entry (sceneKey GravityWell)
     swarm.ts          stub — Swarmlings / ammo-heat
     anomaly.ts        stub — one invert-rules phase per run
     bossGate.ts       stub — Bulwark guard; default destroy to open B
