@@ -5,6 +5,7 @@ import { DriftScene } from './scenes/DriftScene';
 import { DebrisFieldScene } from './scenes/DebrisFieldScene';
 import { GravityWellScene } from './scenes/GravityWellScene';
 import { SwarmScene } from './scenes/SwarmScene';
+import { AnomalyScene } from './scenes/AnomalyScene';
 import { Palette, World } from './constants';
 
 /**
@@ -34,5 +35,5 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
     mouse: true,
     touch: false,
   },
-  scene: [BootScene, PreloadScene, DriftScene, DebrisFieldScene, GravityWellScene, SwarmScene],
+  scene: [BootScene, PreloadScene, DriftScene, DebrisFieldScene, GravityWellScene, SwarmScene, AnomalyScene],
 };

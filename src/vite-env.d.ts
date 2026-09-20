@@ -57,6 +57,36 @@ type GravityDebugSnapshot = {
   pointBReached: boolean;
 };
 
+type AnomalyDebugSnapshot = {
+  runState: 'playing' | 'recovered' | 'lost';
+  invertRule: 'controls-mirrored';
+  invertLabel: string;
+  invertHint: string;
+  seed: number;
+  seedHex: string;
+  world: { width: number; height: number };
+  hull: number;
+  hullMax: number;
+  fuel: number;
+  fuelCapacity: number;
+  ammo: number;
+  ammoCapacity: number;
+  heat: number;
+  overheated: boolean;
+  elapsedMs: number;
+  toB: number;
+  zone: 'weave' | 'pack' | 'breathe' | null;
+  echoAlive: number;
+  echoTotal: number;
+  echoTelling: number;
+  nearestEchoX: number | null;
+  probe: { x: number; y: number };
+  facing: number;
+  pointBReached: boolean;
+  pointB: { x: number; y: number };
+  zones: Array<{ kind: 'weave' | 'pack' | 'breathe'; x: number; y: number; w: number; h: number }>;
+};
+
 type SwarmDebugSnapshot = {
   runState: 'playing' | 'recovered' | 'lost';
   seed: number;
@@ -84,7 +114,7 @@ type SwarmDebugSnapshot = {
 };
 
 interface Window {
-  __bootPhase?: 'drift' | 'debris-field' | 'gravity-well' | 'swarm';
+  __bootPhase?: 'drift' | 'debris-field' | 'gravity-well' | 'swarm' | 'anomaly';
   __probeTransitSeed?: number;
   __drift?: {
     snapshot: () => DriftDebugSnapshot;
@@ -103,6 +133,12 @@ interface Window {
   };
   __swarm?: {
     snapshot: () => SwarmDebugSnapshot;
+    placeProbe: (x: number, y: number) => void;
+    hitProbe: (amount?: number) => number;
+    restart: () => void;
+  };
+  __anomaly?: {
+    snapshot: () => AnomalyDebugSnapshot;
     placeProbe: (x: number, y: number) => void;
     hitProbe: (amount?: number) => number;
     restart: () => void;
