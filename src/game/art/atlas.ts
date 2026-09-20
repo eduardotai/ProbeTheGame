@@ -396,16 +396,16 @@ const COVER_STEEL_PAL: PixelPalette = {
   R: 0x6a849c,
 };
 
-/** Chipped debris — transparent corners, rivets, cracks. */
+/** Chipped debris — opaque rock with cracks and rivets (no see-through corners). */
 const COVER_DEBRIS = [
-  '.hhhhhh.',
+  'hhhhhhhh',
   'hdbccbdh',
   'hbcccRbh',
   'hbcXccbh',
   'hbccRcbh',
   'hdbccbdh',
   'hbRbbbDh',
-  '.hhhhhh.',
+  'hhhhhhhh',
 ];
 
 const COVER_DEBRIS_PAL: PixelPalette = {

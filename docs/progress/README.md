@@ -1,30 +1,34 @@
 # Progress media
 
-Playtest stills and clips. Boss Gate (M2.5) seed `4242` (`?phase=boss&seed=4242`). Win: **destroy the Gate Bulwark to open B**.
+Pixel-art pass (after M2.5 Boss Gate). Canvas atlas, nearest-neighbor. Seed `4242` where the spine is seeded.
 
-## M2.5 Boss Gate
+Greybox rectangles are gone for probe, named enemies, cover/pillars/debris, Point A/B, and the Boss Gate wall. Combat numbers unchanged.
+
+## Pixel-art pass
 
 | File | What it shows |
 |------|----------------|
-| `boss-spawn.png` | Launch at A — GATE SEALED, DESTROY THE GUARD, TO B ~2890, LAUNCH WINDOW |
-| `boss-approach.png` | Approach corridor (pillars, GATE AHEAD). Sweep tell down the lane — not a free dash |
-| `boss-charge-tell.png` | **CHARGE TELL** — red lane + frontal plate, Gate Bulwark HP |
-| `boss-sweep-tell.png` | **SWEEP TELL** — orange cone |
-| `boss-slam-tell.png` | **SLAM TELL** — ring telegraph (enraged / half HP) |
-| `boss-gate-open.png` | Guard down, wall **OPEN**, Point B lit, GATE OPEN |
-| `boss-recovered.png` | Point B — PROBE RECOVERED |
-| `boss-lost.png` | HULL 0 — PROBE LOST |
-| `boss-fight.mp4` | Approach, charge tell, dodge/fire, sweep, kill, B recover |
-| `boss-confirm-drift.png` | `?phase=drift` still boots Drift |
-| `boss-confirm-debris.png` | `?phase=debris` still boots Debris Field |
-| `boss-confirm-gravity.png` | `?phase=gravity` still boots Gravity Well |
-| `boss-confirm-swarm.png` | `?phase=swarm` still boots Swarm |
-| `boss-confirm-anomaly.png` | `?phase=anomaly` still boots Anomaly |
+| `pixel-probe.png` | Drift spawn — cyan pixel probe at A, steel tiled covers, red Hunter chevrons, Point B beacon |
+| `pixel-drift.png` | Full Drift playfield (same beat as `drift-spawn.png`, now pixel) |
+| `pixel-debris.png` | Debris Field — chipped pixel slabs, Ambusher + funnel Hunters, pockets, Point A/B |
+| `pixel-gravity.png` | Gravity Well — pixel rings + well-core, Gravity Bulwark, hunters, shortcut/long way |
+| `pixel-swarm.png` / `pixel-enemies.png` | Swarm — yellow Swarmling darts, CLEAR pocket, PUSH lane, steel pillars |
+| `pixel-anomaly.png` | Anomaly — purple Echoes, inverted HUD, WEAVE floor, anomaly-edged covers |
+| `pixel-boss-spawn.png` | Boss Gate launch — pixel probe, maroon pillars, GATE SEALED |
+| `pixel-boss-bulwark.png` | Gate Bulwark (named variant) + CHARGE TELL, sealed striped wall |
+| `pixel-boss-gate.png` | Guard down — wall **OPEN** (cyan ghost frame), GATE OPEN |
+| `pixel-phase-compare.png` | Greybox (left) vs pixel (right): Drift top, Boss Gate bottom |
+| `pixel-probe.mp4` | Drift: WASD fly, weave covers, Shift dodge, pixel probe |
+| `pixel-enemies.mp4` | Swarm: fly into pack, Space fire, Swarmling darts |
+| `pixel-boss-bulwark.mp4` | Boss Gate: approach into arena, Gate Bulwark, sealed wall, tells |
+| `pixel-phase-compare.mp4` | `?phase=` boots: Drift → Debris → Gravity → Swarm → Anomaly → Boss |
 
 ## Earlier phases (already on main)
 
 | File | What it shows |
 |------|----------------|
+| `boss-spawn.png` / `boss-approach.png` / `boss-charge-tell.png` / `boss-sweep-tell.png` / `boss-slam-tell.png` / `boss-gate-open.png` / `boss-recovered.png` / `boss-lost.png` | M2.5 greybox stills (pre-pixel) |
+| `boss-fight.mp4` | M2.5 greybox fight clip |
 | `anomaly-spawn.png` / `anomaly-mirrored.png` / `anomaly-pack.png` / `anomaly-breathe.png` / `anomaly-echo-tell.png` / `anomaly-recovered.png` / `anomaly-lost.png` | Anomaly stills |
 | `anomaly-invert.mp4` | Anomaly invert clip |
 | `swarm-spawn.png` / `swarm-clear-pocket.png` / `swarm-push.png` / `swarm-heat-ammo.png` / `swarm-recovered.png` / `swarm-lost.png` | Swarm stills |
