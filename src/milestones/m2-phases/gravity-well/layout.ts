@@ -89,7 +89,7 @@ export function paintGravityField(scene: Phaser.Scene): void {
     .setDepth(6)
     .setAlpha(0.8);
   scene.add
-    .text(320, 78, 'LONG WAY', { ...labelStyle, color: '#6a9aac' })
+    .text(720, 58, 'LONG WAY', { ...labelStyle, color: '#6a9aac' })
     .setOrigin(0.5, 0.5)
     .setDepth(6)
     .setAlpha(0.8);
