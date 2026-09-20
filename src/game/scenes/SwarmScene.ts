@@ -431,6 +431,14 @@ export class SwarmScene extends Phaser.Scene {
         probe: { x: this.probe.x, y: this.probe.y },
         facing: this.facing,
         pointBReached: this.pointB.reached,
+        pointB: { x: this.layout.pointB.x, y: this.layout.pointB.y },
+        zones: this.layout.zones.map((zone) => ({
+          kind: zone.kind,
+          x: zone.x,
+          y: zone.y,
+          w: zone.w,
+          h: zone.h,
+        })),
       }),
       placeProbe: (x: number, y: number) => {
         this.probe.setPosition(x, y);

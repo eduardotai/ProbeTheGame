@@ -79,6 +79,8 @@ type SwarmDebugSnapshot = {
   probe: { x: number; y: number };
   facing: number;
   pointBReached: boolean;
+  pointB: { x: number; y: number };
+  zones: Array<{ kind: 'clear' | 'push'; x: number; y: number; w: number; h: number }>;
 };
 
 interface Window {
