@@ -4,7 +4,7 @@ Sci-fi roguelike set in **Thursday Arena** (Grokbot Galaxy). You are not a hero 
 
 > You are not a hero. You are a probe. You do not return.
 
-**Current playable gate: Milestone 2.3 — Swarm** (M1 Drift still boots by default). Phaser 3 + TypeScript + Vite. Greybox silhouettes. Keyboard-only.
+**Current playable gate: Milestone 2.4 — Anomaly** (M1 Drift still boots by default). Phaser 3 + TypeScript + Vite. Greybox silhouettes. Keyboard-only.
 
 Design source of truth (do not contradict):
 
@@ -37,8 +37,9 @@ npm run preview  # serve the production bundle
 | Debris Field | `?phase=debris` or `?phase=debris-field` |
 | Gravity Well | `?phase=gravity` or `?phase=gravity-well` |
 | Swarm | `?phase=swarm` (optional `&seed=12345` locks the spine) |
+| Anomaly | `?phase=anomaly` (optional `&seed=12345` locks the spine) |
 
-Other Map 1 ids resolve in the phase registry but are still stubs (they fall back to Drift).
+Boss Gate still stubs (falls back to Drift).
 
 ## How to play
 
@@ -73,6 +74,18 @@ Dozens of small **Swarmlings** pressure the whole run (denser near B). They **fl
 
 Choice: **CLEAR** a pocket (spend ammo/heat, quieter lane) vs **PUSH** through contact damage toward B. Reach B or die; **R** relaunches Swarm (same seed for this page load unless you passed `?seed=`).
 
+### M2.4 Anomaly
+
+Exactly one Anomaly per Map 1 run later (after Swarm, before Boss Gate). This milestone ships it **standalone**.
+
+**Invert lock (this phase only): controls mirrored.** WASD and arrows reverse on both axes (`W` is down, `S` is up, `A` is right, `D` is left). Facing, dodge, and Space fire follow the inverted thrust — not the pointer. The HUD chip and the launch runway both spell it: `INVERT  CONTROLS MIRRORED  ·  W↓  S↑  A→  D←`.
+
+Why this invert (not silence-attracts): it is the more skill-readable Hades/Dead Cells check on precise WASD. Silence-attracts after Swarm's heat/ammo loop can collapse into holding Space, which fights the no-auto-aim north star.
+
+Long seeded A→B (~4400px, camera follows). Same `seed` → same covers and Echo homes. Quiet runway so you feel the invert before contact; then weave / pack / breathe toward B. Named variant: **Echo** (inverted Swarm tell — dims and shrinks, then lunges). One **Echo Prime** on the approach. Heat + ammo still gate spray. Reach B or die; **R** relaunches Anomaly.
+
+No music bed (MVP).
+
 ## Milestone map
 
 Gated by the PRD. **Do not start the next milestone until the previous gate is playable.**
@@ -98,9 +111,10 @@ M2 Phases 2–6 (one at a time, each standalone-bootable)
     gravityWell.ts    registry entry (sceneKey GravityWell)
     swarm/            M2.3 playable — long A→B spine / Swarmlings / heat+ammo
     swarm.ts          registry entry (sceneKey Swarm)
-    anomaly.ts        stub — one invert-rules phase per run
-    bossGate.ts       stub — Bulwark guard; default destroy to open B
-  src/game/proc/      shared seeded RNG + transit camera (Swarm uses it now)
+    anomaly/          M2.4 playable — mirrored controls / Echo dim-tell / long spine
+    anomaly.ts        registry entry (sceneKey Anomaly)
+    bossGate.ts       stub — see Boss Gate TODOs below
+  src/game/proc/      shared seeded RNG + transit camera (Swarm + Anomaly)
 
 M3 Full Map 1 loop
   src/milestones/m3-map1/
@@ -110,6 +124,20 @@ M3 Full Map 1 loop
 ```
 
 MVP **does not** include narrative logs, meta-upgrades at B, Map 2+, music beds, or art polish beyond readable silhouettes.
+
+## Boss Gate TODOs (M2.5 — still stubbed)
+
+Do not start until Anomaly is standalone-playable.
+
+- Standalone boot: `?phase=boss` / `?phase=boss-gate` (aliases already resolve; scene is still null → Drift fallback).
+- Heavy **Bulwark-class guard** (or Boss Gate unique). Named variant per GDD §7.
+- Default win: **destroy the guard to open Point B** (GDD §4.6). Bypass vs kill is still open (GDD Q6) — do not invent a Sensors/Utility bypass until Eduardo locks it.
+- Skill test of prior verbs: precise WASD, fuel dodge, intentional Space fire. Not auto-aim. Finite A→B, not an arena.
+- No music bed in MVP (full vision allows music here).
+- Greybox OK; pixel art is a later pass.
+- Playtest stills + one short mp4 under `docs/progress/` (`boss-*`) before merge.
+- Do not retune Drift / Debris / Gravity / Swarm / Anomaly unless a shared bug blocks the gate.
+- M3 chaining (full Map 1 A→B, permadeath, Play Again) stays after M2.5.
 
 ## Stack
 

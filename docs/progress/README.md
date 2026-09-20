@@ -1,23 +1,30 @@
 # Progress media
 
-Playtest stills and clips. Swarm (M2.3) seed `4242` (`?phase=swarm&seed=4242`).
+Playtest stills and clips. Anomaly (M2.4) seed `4242` (`?phase=anomaly&seed=4242`). Invert lock: **controls mirrored**.
 
-## M2.3 Swarm
+## M2.4 Anomaly
 
 | File | What it shows |
 |------|----------------|
-| `swarm-spawn.png` | Launch runway at A — quiet spawn, SEED, LAUNCH WINDOW, CLEAR/PUSH ahead |
-| `swarm-clear-pocket.png` | Probe inside a **CLEAR** pocket (HUD: CLEAR POCKET) |
-| `swarm-push.png` | Mid-transit **PUSH** lane packed with Swarmlings |
-| `swarm-heat-ammo.png` | Space fire gated — AMMO 23/28, HEAT **LOCK** |
-| `swarm-recovered.png` | Point B — PROBE RECOVERED (TO B 0) |
-| `swarm-lost.png` | HULL 0 — PROBE LOST |
-| `swarm-pressure.mp4` | A→B thrust into Swarm pressure: camera follow, Space bursts, Shift dodge, then hull 0 |
+| `anomaly-spawn.png` | Launch runway at A — quiet spawn, SEED, **CONTROLS MIRRORED**, LAUNCH WINDOW, invert chip |
+| `anomaly-mirrored.png` | After **D** (moves left) then **W** (moves down) — invert is live |
+| `anomaly-pack.png` | Mid-transit **PACK** lane of Echoes (TO B ~2900) |
+| `anomaly-breathe.png` | Probe inside a **BREATHE** alcove to reorient |
+| `anomaly-echo-tell.png` | Echoes **DIM TELL** (inverted Swarm tell: dim/shrink, then lunge) |
+| `anomaly-recovered.png` | Point B — PROBE RECOVERED (TO B 0) |
+| `anomaly-lost.png` | HULL 0 — PROBE LOST |
+| `anomaly-invert.mp4` | D-left then A-right through the invert, camera follow, Space fire, fight-through |
+| `anomaly-confirm-drift.png` | `?phase=drift` still boots Drift |
+| `anomaly-confirm-debris.png` | `?phase=debris` still boots Debris Field |
+| `anomaly-confirm-gravity.png` | `?phase=gravity` still boots Gravity Well |
+| `anomaly-confirm-swarm.png` | `?phase=swarm` still boots Swarm |
 
 ## Earlier phases (already on main)
 
 | File | What it shows |
 |------|----------------|
+| `swarm-spawn.png` / `swarm-clear-pocket.png` / `swarm-push.png` / `swarm-heat-ammo.png` / `swarm-recovered.png` / `swarm-lost.png` | Swarm stills |
+| `swarm-pressure.mp4` | Swarm A→B pressure clip |
 | `gravity_well_layout.png` | Gravity Well at launch |
 | `gravity_well_long_way_label.png` | LONG WAY label on the north rim |
 | `gravity_well_recover_b_and_horizon_death.mp4` | Gravity recover at B / horizon death; Drift and Debris still boot |
